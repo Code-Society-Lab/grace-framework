@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm>=8"]
+
+[project]
+name = "{{ cookiecutter.project_name }}"
+authors = []
+description = "{{ cookiecutter.project_description }}"
+requires-python = ">=3.10"
+dynamic = ["version"]
+
+dependencies = [
+	"grace",
+	"discord>2.0",
+	"logger",
+	"coloredlogs",
+	"python-dotenv",
+	"configparser",
+	"click",
+	"sqlalchemy",
+	"sqlalchemy-utils",
+	"alembic==1.8.1",
+	"mypy",
+	"pytest",
+	"coverage",
+]
+
+[tool.setuptools.packages]
+find = {}

@@ -2,13 +2,12 @@
 requires = ["setuptools>=64", "setuptools_scm>=8"]
 
 [project]
-name = "Grace Framework"
+name = "grace-framework"
 authors = [
 	{ name="Code Society Lab" },
 	{ name="Simon Roy", email="simon.roy1211@gmail.com" }
 ]
 description = "Extensible Discord bot framework based on Discord.py"
-readme = { file="README.md" }
 license = { file="LICENSE" }
 requires-python = ">=3.10"
 dynamic = ["version"]
@@ -19,9 +18,11 @@ dependencies = [
 	"coloredlogs",
 	"python-dotenv",
 	"configparser",
+	"click",
 	"sqlalchemy",
 	"sqlalchemy-utils",
-	"alembic==1.81",
+	"alembic==1.8.1",
+	"cookiecutter",
 	"mypy",
 	"pytest",
 	"coverage",
@@ -32,9 +33,7 @@ dependencies = [
 "Source" = "https://github.com/Code-Society-Lab/grace-framework"
 
 [project.scripts]
-grace = "grace:run"
+grace = "grace.cli:run"
 
 [tool.setuptools]
-packages=[
-    "grace"
-]
+packages = ["grace"]

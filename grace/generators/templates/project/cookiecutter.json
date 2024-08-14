@@ -1,0 +1,7 @@
+{
+  "project_name": "my-bot",
+  "__project_slug": "{{ cookiecutter.project_name|lower|replace('-', '_') }}",
+  "__project_class": "{{ cookiecutter.project_name|title|replace('-', '') }}",
+  "project_description": "{{ cookiecutter.project_description }}",
+  "database": ["yes", "no"]
+}
