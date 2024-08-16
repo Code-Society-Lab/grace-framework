@@ -5,22 +5,33 @@ from logging import basicConfig, critical
 from logging.handlers import RotatingFileHandler
 
 from types import ModuleType
-from typing import Generator, Any, Union, IO, Dict
+from typing import Generator, Any, Union, Dict
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import declarative_base, sessionmaker, Session, DeclarativeMeta
-from sqlalchemy_utils import database_exists, create_database, drop_database
+from sqlalchemy.orm import (
+    declarative_base,
+    sessionmaker,
+    Session,
+    DeclarativeMeta
+)
+from sqlalchemy_utils import (
+    database_exists,
+    create_database,
+    drop_database
+)
 
 from pathlib import Path
-from config.config import Config
+from grace.config import Config
+from grace.exceptions import ConfigError
 from grace.importer import find_all_importables, import_module
 
 
 class Application:
-    """This class is the core of the application In other words, this class that manage the database, the application
-    environment and loads the configurations.
+    """This class is the core of the application In other words,
+    this class that manage the database, the application environment
+    and loads the configurations.
 
     Note: The database uses SQLAlchemy ORM (https://www.sqlalchemy.org/).
     """
@@ -29,12 +40,11 @@ class Application:
     __session: Union[Session, None] = None
     __base: DeclarativeMeta = declarative_base()
 
-    template_path: Path = Path("bin/templates/default.database.template.cfg")
-    database_config_path: Path = Path("config/database.cfg")
-
     def __init__(self):
-        if not self.database_config_path.exists():
-            self._generate_database_config()
+        database_config_path: Path = Path("config/database.cfg")
+        
+        if not database_config_path.exists():
+            raise ConfigError("Unable to find the 'database.cfg' file.")
 
         self.__token: str = self.config.get("discord", "token")
         self.__engine: Union[Engine, None] = None
@@ -67,7 +77,7 @@ class Application:
         return self.__config
 
     @property
-    def bot(self) -> SectionProxy:
+    def client(self) -> SectionProxy:
         return self.config.client
 
     @property
@@ -102,9 +112,13 @@ class Application:
         return None
 
     def load(self, environment: str, command_sync: bool = True):
-        """Sets the environment and loads all the component of the application"""
+        """
+        Sets the environment and loads all the component of the application
+        """
 
         self.command_sync = command_sync
+        self.environment = environment
+
         self.config.set_environment(environment)
         self.load_logs()
         self.load_models()
@@ -157,7 +171,10 @@ class Application:
         self.__session = None
 
     def reload_database(self):
-        """Reload the database. This function can be use in case there's a dynamic environment change."""
+        """
+        Reload the database. This function can be use in case
+        there's a dynamic environment change.
+        """
 
         self.unload_database()
         self.load_database()
@@ -185,12 +202,3 @@ class Application:
 
         self.load_database()
         self.base.metadata.drop_all(self.__engine)
-
-    def _generate_database_config(self):
-        template: IO = open(self.template_path, mode='rt', encoding='utf-8')
-        config: IO = open(self.database_config_path, mode='wt', encoding='utf-8')
-
-        config.write(template.read())
-
-        template.close()
-        config.close()

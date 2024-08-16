@@ -45,23 +45,29 @@ class EnvironmentInterpolation(BasicInterpolation):
 
 
 class Config:
-    """This class is the application configurations. It loads all the configuration for the given environment
+    """
+    This class is the application configurations.
+    It loads all the configuration for the given environment
 
-    The config environment is chosen by checking the value of the `BOT_ENV` environment variable. If the variable
-    is not set it will load with production by default.
+    The config environment is chosen by checking the value of the `BOT_ENV`
+    environment variable. If the variable is not set it will load
+    with production by default.
 
-    There can be only one config loaded at once. Which means thar if you instantiate a second or multiple Config
-    object, they will all share the same environment. This is to say, that the config objects are identical.
+    There can be only one config loaded at once. Which means thar if you
+    instantiate a second or multiple Config object, they will all share the
+    same environment. This is to say, that the config objects are identical.
     """
     def __init__(self):
         load_dotenv(".env")
 
         self.__environment: Optional[str] = None
-        self.__config: ConfigParser = ConfigParser(interpolation=EnvironmentInterpolation())
+        self.__config: ConfigParser = ConfigParser(
+            interpolation=EnvironmentInterpolation()
+        )
 
-        self.__config.read("config/settings.cfg")
-        self.__config.read("config/database.cfg")
-        self.__config.read("config/environment.cfg")
+        self.read("config/settings.cfg")
+        self.read("config/database.cfg")
+        self.read("config/environment.cfg")
 
     @property
     def database_uri(self) -> Union[str, URL]:
@@ -97,8 +103,14 @@ class Config:
     def database_name(self) -> str:
         return f"{self.client['name']}_{self.current_environment}"
 
+    def read(self, file: str):
+        self.__config.read(file)
+
     def get(self, section_key, value_key, fallback=None) -> Optional[Union[str, int, float, bool]]:
-        value: str = self.__config.get(section_key, value_key, fallback=fallback)
+        value: str = self.__config.get(
+            section_key, value_key,
+            fallback=fallback
+        )
 
         if value and match(r"^[\d.]*$|^(?:True|False)*$", value):
             return literal_eval(value)

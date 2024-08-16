@@ -1,10 +1,10 @@
-from bot import app
-
+from grace.application import Application
 from logging.config import fileConfig
-
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
+
+app = Application()
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
