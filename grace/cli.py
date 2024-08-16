@@ -1,7 +1,6 @@
 
 import discord
 from os import getpid
-from logging import info
 from click import group, argument, option, pass_context
 from grace.generator import register_generators
 
