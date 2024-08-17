@@ -38,5 +38,5 @@ grace = "grace.cli:main"
 [tool.setuptools]
 packages = ["grace"]
 
-[flake8]
+[tool.flake8]
 exclude = grace/generators/templates/*
