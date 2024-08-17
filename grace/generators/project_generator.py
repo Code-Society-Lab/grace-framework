@@ -32,7 +32,8 @@ class ProjectGenerator(Generator):
         :raises ValueError: If the name is not in the correct format.
         :return: True if the name is valid.
         """
-        if not name.islower() or '-' not in name:
+        re = r'^[a-z]+(-[a-z]+)+$'
+        if not name.islower() or not re.match(name):
             raise ValueError("Invalid name format. Name must be in lower case and separated by '-'")
         return True
 
