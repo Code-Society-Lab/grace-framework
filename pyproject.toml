@@ -38,8 +38,8 @@ grace = "grace.cli:main"
 [tool.setuptools]
 packages = ["grace"]
 
+[tool.mypy]
+exclude = ['grace/generators/templates']
+
 [tool.flake8]
-exclude =
-    grace
-      generators
-       templates   
+exclude = ['grace/generators/templates']
