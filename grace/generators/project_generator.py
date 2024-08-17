@@ -1,3 +1,4 @@
+from re import match
 from grace.generator import Generator
 
 
@@ -32,8 +33,7 @@ class ProjectGenerator(Generator):
         :raises ValueError: If the name is not in the correct format.
         :return: True if the name is valid.
         """
-        re = r'^[a-z]+(-[a-z]+)+$'
-        if not name.islower() or not re.match(name):
+        if not name.islower() or not match(r'^[a-z]+(-[a-z]+)+$', name):
             raise ValueError("Invalid name format. Name must be in lower case and separated by '-'")
         return True
 
