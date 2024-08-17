@@ -39,4 +39,7 @@ grace = "grace.cli:main"
 packages = ["grace"]
 
 [tool.flake8]
-exclude = grace/generators/templates/*
+exclude =
+    grace
+      generators
+       templates   
