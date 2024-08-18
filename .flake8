@@ -1,2 +1,2 @@
 [flake8]
-exclude = grace/generators/templates/*
+exclude = grace/generators/templates/
