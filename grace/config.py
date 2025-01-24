@@ -22,7 +22,6 @@ class EnvironmentInterpolation(BasicInterpolation):
     In the example above, token will take the value of the environment variable
     called 'MY_SECRET_VAR'. In case 'MY_SECRET_VAR' doesn't exist, the value will
     not be evaluated.
-
     """
 
     def before_get(
@@ -33,6 +32,18 @@ class EnvironmentInterpolation(BasicInterpolation):
             value: str,
             defaults: Mapping[str, str]
     ) -> str:
+        """Interpolate the value before getting it from the parser.
+
+        :param parser: The parser to get the value from.
+        :type parser: MutableMapping[str, Mapping[str, str]]
+        :param section: The section to get the value from.
+        :type section: str
+        :param option: The option to get the value from.
+        :type option: str
+        :param value: The value to interpolate.
+        :type value: str
+        :param defaults: The default values to use.
+        """
         value = super().before_get(parser, section, option, value, defaults)
         expandvars: str = path.expandvars(value)
 
@@ -45,8 +56,7 @@ class EnvironmentInterpolation(BasicInterpolation):
 
 
 class Config:
-    """
-    This class is the application configurations.
+    """This class is the application configurations.
     It loads all the configuration for the given environment
 
     The config environment is chosen by checking the value of the `BOT_ENV`
@@ -104,9 +114,19 @@ class Config:
         return f"{self.client['name']}_{self.current_environment}"
 
     def read(self, file: str):
+        """Read the configuration file."""
         self.__config.read(file)
 
     def get(self, section_key, value_key, fallback=None) -> Optional[Union[str, int, float, bool]]:
+        """Get the value from the configuration file.
+
+        :param section_key: The section key to get the value from.
+        :type section_key: str
+        :param value_key: The value key to get the value from.
+        :type value_key: str
+        :param fallback: The value to return if the value is not found (default: None).
+        :type fallback: Optional[Union[str, int, float, bool]]
+        """
         value: str = self.__config.get(
             section_key, value_key,
             fallback=fallback
@@ -117,6 +137,11 @@ class Config:
         return value
 
     def set_environment(self, environment: str):
+        """Set the environment for the configuration.
+
+        :param environment: The environment to set. (Production, Development, Test)
+        :type environment: str
+        """
         if environment in ["production", "development", "test"]:
             self.__environment = environment
         else:
