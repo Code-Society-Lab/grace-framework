@@ -6,8 +6,6 @@ from logging import info
 from click import group, argument, option, pass_context
 from grace.generator import register_generators
 
-import os
-import sys
 
 APP_INFO = """
 | Discord.py version: {discord_version}

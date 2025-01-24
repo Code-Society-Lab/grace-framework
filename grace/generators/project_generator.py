@@ -9,7 +9,7 @@ class ProjectGenerator(Generator):
         "hidden": True
     }
 
-    def generate(self, name, database=True):
+    def generate(self, name: str, database: bool = True):
         info(f"Creating '{name}'")
 
         self.generate_template(self.NAME, values={
@@ -18,9 +18,25 @@ class ProjectGenerator(Generator):
 			"database": "yes" if database else "no"
         })
 
-    def validate(self, name, **_kwargs):
-        return match('([a-z]|[0-9]|-)+', name)
+    def validate(self, name: str, **_kwargs) -> bool:
+        """Validate the project name.
+
+        A valid project name must:
+        - contain only lowercase letters, numbers, and hyphens
+
+        Example:
+        - "awesome-project" is valid
+        - "awesomeproject" is valid
+        - "awesome-project1" is valid
+        - "my-awesome-project" is valid
+
+        - "awesomeProject" is invalid
+        - "AwesomeProject" is invalid
+        - "awesome_project" is invalid
+        - "myAwesomeproject12" is invalid
+        """
+        return bool(match('([a-z]|[0-9]|-)+', name))
 
 
-def generator():
+def generator() -> Generator:
     return ProjectGenerator()

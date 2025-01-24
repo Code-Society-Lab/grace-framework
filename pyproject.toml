@@ -25,6 +25,8 @@ dependencies = [
 	"cookiecutter",
 	"mypy",
 	"pytest",
+	"flake8",
+	"pytest-mock",
 	"coverage",
 ]
 
