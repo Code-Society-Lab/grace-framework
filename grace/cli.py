@@ -1,11 +1,11 @@
-
 import discord
-from os import getpid
+
+from os import getpid, getcwd
+from sys import path
+from logging import info
 from click import group, argument, option, pass_context
 from grace.generator import register_generators
 
-import os
-import sys
 
 APP_INFO = """
 | Discord.py version: {discord_version}
@@ -18,6 +18,7 @@ APP_INFO = """
 
 @group()
 def cli():
+    # There's probably a better to create the group
     register_generators(generate)
 
 
@@ -41,8 +42,7 @@ def new(ctx, name, database=True):
 @option("--environment", default='development')
 @option("--sync/--no-sync", default=True)
 def run(environment=None, sync=None):
-    currentdir = os.getcwd()
-    sys.path.insert(0, currentdir)
+    path.insert(0, getcwd())
 
     try:
         from bot import app, run
@@ -66,7 +66,7 @@ def _load_database(app):
         app.create_tables()
 
 def _show_application_info(app):
-    print(APP_INFO.format(
+    info(APP_INFO.format(
         discord_version=discord.__version__,
         env=app.config.current_environment,
         pid=getpid(),

@@ -1,5 +1,5 @@
 from logging import warning
-from os import walk, path, getcwd
+from os import walk
 from pkgutil import walk_packages
 from itertools import chain
 from pathlib import Path, PurePath
@@ -8,13 +8,17 @@ from typing import Set, Any, Generator
 from importlib import import_module
 
 
-import_module
-
-
 def import_package_modules(
     package: ModuleType,
     shallow: bool = True
 ) -> Generator[ModuleType, None, None]:
+    """Import all modules in the package and yield them in order.
+
+    :param package: The package to import modules from.
+    :type package: ModuleType
+    :param shallow: Whether to import only the top-level package (default: True).
+    :type shallow: bool
+    """
     for module in find_all_importables(package, shallow):
         yield import_module(module)
 
@@ -23,29 +27,38 @@ def find_all_importables(
     package: ModuleType,
     shallow: bool = True
 ) -> Set[str]:
-    """Find all importables in the project and return them in order.
+    """Find importable modules in the project and return them in order.
 
-    This solution is based on a solution by Sviatoslav Sydorenko (webknjaz)
-    * https://github.com/sanitizers/octomachinery/blob/2428877/tests/circular_imports_test.py
+    :param package: The package to search for importable.
+    :type package: ModuleType
+    :param shallow: Whether to search only the top-level package (default: True).
+    :type shallow: bool
     """
     return set(
         chain.from_iterable(
-            _discover_path_importables(Path(p), package.__name__, shallow)
+            _discover_importable_path(Path(p), package.__name__, shallow)
             for p in package.__path__
         )
     )
 
 
 # TODO : Add proper types
-def _discover_path_importables(
-    pkg_pth,
-    pkg_name,
-    shallow
+def _discover_importable_path(
+    pkg_pth: Path,
+    pkg_name: str,
+    shallow: bool
 ) -> Generator[Any, Any, Any]:
-    """Yield all importables under a given path and package.
+    """Yield all importable packages under a given path and package.
 
     This solution is based on a solution by Sviatoslav Sydorenko (webknjaz)
     * https://github.com/sanitizers/octomachinery/blob/2428877/tests/circular_imports_test.py
+
+    :param pkg_pth: The path to the package.
+    :type pkg_pth: Path
+    :param pkg_name: The name of the package.
+    :type pkg_name: str
+    :param shallow: Whether to search only the top-level package.
+    :type shallow: bool
     """
     for dir_path, _d, file_names in walk(pkg_pth):
         pkg_dir_path: Path = Path(dir_path)
