@@ -32,8 +32,6 @@ class Application:
     """This class is the core of the application In other words,
     this class that manage the database, the application environment
     and loads the configurations.
-
-    Note: The database uses SQLAlchemy ORM (https://www.sqlalchemy.org/).
     """
 
     __config: Union[Config, None] = None

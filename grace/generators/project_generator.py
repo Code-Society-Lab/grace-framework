@@ -1,4 +1,6 @@
 from grace.generator import Generator
+from re import match
+from logging import info
 
 
 class ProjectGenerator(Generator):
@@ -8,8 +10,7 @@ class ProjectGenerator(Generator):
     }
 
     def generate(self, name, database=True):
-		# name must be `lower case separated by -`
-        print(f"Creating '{name}'")
+        info(f"Creating '{name}'")
 
         self.generate_template(self.NAME, values={
             "project_name": name,
@@ -18,8 +19,8 @@ class ProjectGenerator(Generator):
         })
 
     def validate(self, name, **_kwargs):
-        # raise error if name isn't properly formated
-        return True
+        return match('([a-z]|[0-9]|-)+', name)
 
 
-generator = ProjectGenerator()
+def generator():
+    return ProjectGenerator()

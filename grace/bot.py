@@ -1,20 +1,26 @@
 from logging import info, warning, critical
 from discord import LoginFailure, Intents, ActivityType, Activity
 from discord.ext.commands import Bot as DiscordBot, when_mentioned_or
-
+from grace.application import Application, SectionProxy
 
 class Bot(DiscordBot):
-    def __init__(self, app, **kwargs):
-        self.app = app
-        self.config = self.app.client
+    """This class is the bot core
 
-        intents = kwargs.get("intents", Intents.default())
+    This class is a subclass of `discord.ext.commands.Bot` and is the core of the bot.
+    It is responsible for loading the extensions and syncing the commands.
+
+    The bot is instantiated with the application object and the intents.
+    """
+
+    def __init__(self, app: Application, **kwargs):
+        self.app: Application = app
+        self.config: SectionProxy = self.app.client
 
         super().__init__(
             command_prefix=when_mentioned_or(self.config.get("prefix")),
             description=self.config.get("description"),
             activity=Activity(type=ActivityType.playing),
-            intents=intents,
+            intents=kwargs.get("intents", Intents.default()),
         )
 
     async def _load_extensions(self):
@@ -32,6 +38,10 @@ class Bot(DiscordBot):
             await self.tree.sync(guild=guild)
 
     def run(self):
+        """Run the bot
+
+        Override the `run` method to handle the token retrieval
+        """
         try:
             if self.app.token:
                 super().run(self.app.token)
