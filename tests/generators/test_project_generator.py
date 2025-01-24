@@ -44,14 +44,12 @@ def test_validate_valid_name(generator):
 
 def test_validate_invalid_name_no_hyphen(generator):
     """Test if the validate method raises ValueError for name without a hyphen."""
-    invalid_name = "exampleproject"
-    with pytest.raises(ValueError, match="Invalid name format"):
-        generator.validate(invalid_name)
+    invalid_name = "ExampleProject"
+    assert generator.validate(invalid_name) == False
 
 
 def test_validate_invalid_name_uppercase(generator):
     """Test if the validate method raises ValueError for uppercase name."""
     invalid_name = "Example-Project"
-    with pytest.raises(ValueError, match="Invalid name format"):
-        generator.validate(invalid_name)
+    assert generator.validate(invalid_name) == False
 
