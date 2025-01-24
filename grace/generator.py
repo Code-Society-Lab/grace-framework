@@ -2,7 +2,7 @@ from click import Command, Group
 from pathlib import Path
 from grace.importer import import_package_modules
 from cookiecutter.main import cookiecutter
-from grace.exceptions import ValidationError
+from grace.exceptions import GeneratorError, ValidationError
 
 
 def register_generators(command_group: Group):
@@ -33,7 +33,7 @@ class Generator(Command):
 
     def __init__(self):
         if not self.NAME:
-            raise ValueError("Generator name must be defined.")
+            raise GeneratorError("Generator name must be defined.")
 
         super().__init__(self.NAME, callback=self._generate, **self.OPTIONS)
 

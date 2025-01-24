@@ -5,14 +5,18 @@ from grace.exceptions import ValidationError
 from grace.generator import register_generators
 
 
+class MockGenerator(Generator):
+  NAME = 'mock'
+
+
 @pytest.fixture
 def generator():
-  return Generator()
+  return MockGenerator()
 
 
 def test_generator(generator):
   """Test if the generator is initialized correctly"""
-  assert generator.NAME == None
+  assert generator.NAME == 'mock'
   assert generator.OPTIONS == {}
 
 
