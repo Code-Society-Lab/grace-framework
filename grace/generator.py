@@ -25,7 +25,7 @@ def generator() -> Generator:
 from click import Command, Group
 from pathlib import Path
 from grace.importer import import_package_modules
-from grace.exceptions import GeneratorError, ValidationError
+from grace.exceptions import GeneratorError, ValidationError, NoTemplateError
 from cookiecutter.main import cookiecutter
 from jinja2 import Environment, PackageLoader, Template
 
