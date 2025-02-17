@@ -19,6 +19,11 @@ class GeneratorError(GraceError):
     pass
 
 
+class NoTemplateError(GeneratorError):
+    """Exception raised when no template is found for a generator."""
+    pass
+
+
 class ValidationError(GeneratorError):
     """Exception raised for validation errors inside a generator."""
     pass
