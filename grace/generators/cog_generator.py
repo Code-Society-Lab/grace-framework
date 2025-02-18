@@ -35,7 +35,7 @@ class CogGenerator(Generator):
         Example:
         - HelloWorld
         """
-        return bool(match('([A-Z][a-z]*[0-9]*)+', name))
+        return bool(match(r'^[A-Z][a-zA-Z0-9]*$', name))
 
 
 def generator() -> Generator:
