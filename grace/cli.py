@@ -29,9 +29,7 @@ def generate():
 
 @cli.command()
 @argument("name")
-# This database option is currently disabled since the application and config 
-# does not currently support it.
-# @option("--database/--no-database", default=True)
+@option("--database/--no-database", default=True)
 @pass_context
 def new(ctx, name, database=True):
     cmd = generate.get_command(ctx, 'project')
