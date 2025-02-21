@@ -12,6 +12,9 @@ APP_INFO = """
 | PID: {pid}
 | Environment: {env}
 | Syncing command: {command_sync}
+""".rstrip()
+
+DB_INFO = """
 | Using database: {database} with {dialect}
 """.rstrip()
 
@@ -46,7 +49,6 @@ def run(environment=None, sync=None):
         from bot import app, run
 
         _loading_application(app, environment, sync)
-        _load_database(app)
         _show_application_info(app)
 
         run()
@@ -58,19 +60,19 @@ def _loading_application(app, environment, command_sync):
     app.load(environment, command_sync=command_sync)
 
 
-def _load_database(app):
-    if not app.database_exists:
-        app.create_database()
-        app.create_tables()
-
 def _show_application_info(app):
-    info(APP_INFO.format(
+    info_message = APP_INFO
+
+    if app.database:
+        info_message += DB_INFO
+
+    info(info_message.format(
         discord_version=discord.__version__,
         env=app.config.current_environment,
         pid=getpid(),
         command_sync=app.command_sync,
-        database=app.database_infos["database"],
-        dialect=app.database_infos["dialect"],
+        database=app.database_infos.get("database"),
+        dialect=app.database_infos.get("dialect"),
     ))
 
 

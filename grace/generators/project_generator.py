@@ -16,12 +16,13 @@ class ProjectGenerator(Generator):
         self.generate_template(self.NAME, variables={
             "project_name": name,
 			"project_description": "",
+            "database": database
         })
 
         if database:
             # Should probably be moved into it's own generator so we can
             # generate add the database later on.
-            database_generator = db_generator().generate(output_dir=name)
+            db_generator().generate(output_dir=name)
 
     def validate(self, name: str, **_kwargs) -> bool:
         """Validate the project name.

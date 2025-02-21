@@ -39,11 +39,6 @@ class Application:
     __base: DeclarativeMeta = declarative_base()
 
     def __init__(self):
-        database_config_path: Path = Path("config/database.cfg")
-        
-        if not database_config_path.exists():
-            raise ConfigError("Unable to find the 'database.cfg' file.")
-
         self.__token: str = self.config.get("discord", "token")
         self.__engine: Union[Engine, None] = None
 
@@ -79,6 +74,20 @@ class Application:
         return self.config.client
 
     @property
+    def database(self) -> SectionProxy:
+        return self.config.database
+
+    @property
+    def database_infos(self) -> Dict[str, str]:
+        if not self.database:
+            return {}
+
+        return {
+            "dialect": self.session.bind.dialect.name,
+            "database": self.session.bind.url.database
+        }
+
+    @property
     def extension_modules(self) -> Generator[str, Any, None]:
         """Generate the extensions modules"""
         from bot import extensions
@@ -89,17 +98,6 @@ class Application:
             if not hasattr(imported, "setup"):
                 continue
             yield module
-
-    @property
-    def database_infos(self) -> Dict[str, str]:
-        return {
-            "dialect": self.session.bind.dialect.name,
-            "database": self.session.bind.url.database
-        }
-
-    @property
-    def database_exists(self):
-        return database_exists(self.config.database_uri)
 
     def get_extension_module(self, extension_name) -> Union[str, None]:
         """Return the extension from the given extension name"""
@@ -150,17 +148,23 @@ class Application:
 
     def load_database(self):
         """Loads and connects to the database using the loaded config"""
+        if not self.database:
+            return None
 
         self.__engine = create_engine(
             self.config.database_uri,
             echo=self.config.environment.getboolean("sqlalchemy_echo")
         )
 
-        if self.database_exists:
+        if database_exists(self.config.database_uri):
             try:
                 self.__engine.connect()
             except OperationalError as e:
                 critical(f"Unable to load the 'database': {e}")
+        else:
+            self.create_database()
+            self.create_tables()
+
 
     def unload_database(self):
         """Unloads the current database"""
@@ -179,24 +183,32 @@ class Application:
 
     def create_database(self):
         """Creates the database for the current loaded config"""
+        if not self.database:
+            return None
 
         self.load_database()
         create_database(self.config.database_uri)
 
     def drop_database(self):
         """Drops the database for the current loaded config"""
+        if not self.database:
+            return None
 
         self.load_database()
         drop_database(self.config.database_uri)
 
     def create_tables(self):
         """Creates all the tables for the current loaded database"""
+        if not self.database:
+            return None
 
         self.load_database()
         self.base.metadata.create_all(self.__engine)
 
     def drop_tables(self):
         """Drops all the tables for the current loaded database"""
+        if not self.database:
+            return None
 
         self.load_database()
         self.base.metadata.drop_all(self.__engine)
