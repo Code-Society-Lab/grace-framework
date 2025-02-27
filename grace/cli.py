@@ -2,7 +2,7 @@ import discord
 
 from os import getpid, getcwd
 from sys import path
-from logging import info
+from logging import info, warning
 from click import group, argument, option, pass_context
 from grace.generator import register_generators
 
@@ -56,6 +56,38 @@ def run(environment=None, sync=None):
         print("Unable to find a Grace project in this directory.")
 
 
+@cli.group()
+def db():
+    pass
+
+
+# db group commands (create, drop, seed, reset)
+@db.command()
+def create():
+    if app.database_exists:
+        return warning("Database already exists")
+
+    app.create_database()
+    app.create_tables()
+
+
+@db.command()
+def drop():
+    if not app.database_exists:
+        return warning("Database does not exist")
+
+    app.drop_tables()
+    app.drop_database()
+
+
+@db.command()
+def seed():
+    if not app.database_exists:
+        return warning("Database does not exist")
+        
+    app.seed_database()
+
+
 def _loading_application(app, environment, command_sync):
     app.load(environment, command_sync=command_sync)
 
@@ -64,6 +96,7 @@ def _load_database(app):
     if not app.database_exists:
         app.create_database()
         app.create_tables()
+
 
 def _show_application_info(app):
     info(APP_INFO.format(
@@ -74,7 +107,3 @@ def _show_application_info(app):
         database=app.database_infos["database"],
         dialect=app.database_infos["dialect"],
     ))
-
-
-def main():
-    cli()
