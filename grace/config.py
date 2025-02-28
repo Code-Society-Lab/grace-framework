@@ -75,12 +75,19 @@ class Config:
             interpolation=EnvironmentInterpolation()
         )
 
-        self.read("config/settings.cfg")
-        self.read("config/database.cfg")
+        self.read("config/config.cfg")
         self.read("config/environment.cfg")
+
+        self.__database_config = self.get("database", "config")
+        
+        if self.__database_config:
+            self.read(f"config/{self.__database_config}")
 
     @property
     def database_uri(self) -> Union[str, URL]:
+        if not self.database:
+            return None
+
         if self.database.get("url"):
             return self.database.get("url")
 
@@ -95,6 +102,8 @@ class Config:
 
     @property
     def database(self) -> SectionProxy:
+        if not self.__database_config:
+            return None
         return self.__config[f"database.{self.__environment}"]
 
     @property

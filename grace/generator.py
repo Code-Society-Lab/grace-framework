@@ -108,7 +108,12 @@ class Generator(Command):
         """Validates the arguments passed to the command."""
         return True
 
-    def generate_template(self, template_dir: str, variables: dict[str, any] = {}):
+    def generate_template(
+        self,
+        template_dir: str,
+        variables: dict[str, any] = {},
+        output_dir: str = ""
+    ):
         """Generates a template using Cookiecutter.
 
         :param template_dir: The name of the template to generate.
@@ -118,7 +123,12 @@ class Generator(Command):
         :type variables: dict[str, any]
         """
         template = str(self.templates_path / template_dir)
-        cookiecutter(template, extra_context=variables, no_input=True)
+        cookiecutter(
+            template,
+            extra_context=variables,
+            no_input=True,
+            output_dir=output_dir
+        )
 
     def generate_file(
         self,

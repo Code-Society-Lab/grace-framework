@@ -1,4 +1,5 @@
 from grace.generator import Generator
+from grace.generators.database_generator import generator as db_generator
 from re import match
 from logging import info
 
@@ -12,11 +13,16 @@ class ProjectGenerator(Generator):
     def generate(self, name: str, database: bool = True):
         info(f"Creating '{name}'")
 
-        self.generate_template(self.NAME, values={
+        self.generate_template(self.NAME, variables={
             "project_name": name,
 			"project_description": "",
-			"database": "yes" if database else "no"
+            "database": database
         })
+
+        if database:
+            # Should probably be moved into it's own generator so we can
+            # generate add the database later on.
+            db_generator().generate(output_dir=name)
 
     def validate(self, name: str, **_kwargs) -> bool:
         """Validate the project name.
