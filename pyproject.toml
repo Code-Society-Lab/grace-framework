@@ -23,6 +23,7 @@ dependencies = [
 	"sqlalchemy-utils",
 	"alembic==1.8.1",
 	"cookiecutter",
+	"jinja2-strcase",
 	"mypy",
 	"pytest",
 	"flake8",
