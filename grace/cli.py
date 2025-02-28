@@ -1,9 +1,9 @@
 import discord
 
-from os import getpid, getcwd
 from sys import path
-from logging import info, warning
-from click import group, argument, option, pass_context
+from os import getpid, getcwd
+from logging import info, warning, critical
+from click import group, argument, option, pass_context, echo
 from grace.generator import register_generators
 
 
@@ -18,13 +18,7 @@ APP_INFO = """
 
 @group()
 def cli():
-    # There's probably a better to create the group
     register_generators(generate)
-
-
-@cli.group()
-def generate():
-    pass
 
 
 @cli.command()
@@ -38,32 +32,44 @@ def new(ctx, name, database=True):
     ctx.forward(cmd)
 
 
-@cli.command()
-@option("--environment", default='development')
-@option("--sync/--no-sync", default=True)
-def run(environment=None, sync=None):
-    path.insert(0, getcwd())
+@group()
+@option("--environment", default='development', help="The environment to load.")
+@option("--sync/--no-sync", default=True, help="Sync the application command.")
+@pass_context
+def app_cli(ctx, environment, sync):
+    app = ctx.obj["app"]
 
-    try:
-        from bot import app, run
-
-        _loading_application(app, environment, sync)
-        _load_database(app)
-        _show_application_info(app)
-
-        run()
-    except ImportError:
-        print("Unable to find a Grace project in this directory.")
+    register_generators(generate)
+    app.load(environment, command_sync=sync)
 
 
-@cli.group()
+@app_cli.group()
+def generate():
+    pass
+
+
+@app_cli.group()
 def db():
     pass
 
 
-# db group commands (create, drop, seed, reset)
+@app_cli.command()
+@pass_context
+def run(ctx, environment, sync):
+    app = ctx.obj["app"]
+    bot = ctx.obj["bot"]
+
+    _load_database(app)
+    _show_application_info(app)
+
+    bot.run()
+
+
 @db.command()
-def create():
+@pass_context
+def create(ctx):
+    app = ctx.obj["app"]
+
     if app.database_exists:
         return warning("Database already exists")
 
@@ -72,7 +78,10 @@ def create():
 
 
 @db.command()
-def drop():
+@pass_context
+def drop(ctx):
+    app = ctx.obj["app"]
+
     if not app.database_exists:
         return warning("Database does not exist")
 
@@ -81,15 +90,15 @@ def drop():
 
 
 @db.command()
-def seed():
+@pass_context
+def seed(ctx):
+    app = ctx.obj["app"]
+
     if not app.database_exists:
         return warning("Database does not exist")
-        
-    app.seed_database()
 
-
-def _loading_application(app, environment, command_sync):
-    app.load(environment, command_sync=command_sync)
+    from db import seed
+    seed.seed_database()
 
 
 def _load_database(app):
@@ -107,3 +116,13 @@ def _show_application_info(app):
         database=app.database_infos["database"],
         dialect=app.database_infos["dialect"],
     ))
+
+
+def main():
+    path.insert(0, getcwd())
+
+    try:
+        from bot import app, bot
+        app_cli(obj={"app": app, "bot": bot})
+    except ImportError:
+        cli()

@@ -35,7 +35,7 @@ dependencies = [
 "Source" = "https://github.com/Code-Society-Lab/grace-framework"
 
 [project.scripts]
-grace = "grace.cli:cli"
+grace = "grace.cli:main"
 
 [tool.setuptools]
 packages = ["grace"]
