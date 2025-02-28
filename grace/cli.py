@@ -5,6 +5,7 @@ from os import getpid, getcwd
 from logging import info, warning, critical
 from click import group, argument, option, pass_context, echo
 from grace.generator import register_generators
+from textwrap import dedent
 
 
 APP_INFO = """
@@ -31,16 +32,22 @@ def new(ctx, name, database=True):
     cmd = generate.get_command(ctx, 'project')
     ctx.forward(cmd)
 
+    echo(dedent(f"""
+      Done! Please do :\n
+        1. cd {name}
+        2. set your token in your .env
+        3. grace run
+    """))
+
 
 @group()
 @option("--environment", default='development', help="The environment to load.")
-@option("--sync/--no-sync", default=True, help="Sync the application command.")
 @pass_context
-def app_cli(ctx, environment, sync):
+def app_cli(ctx, environment):
     app = ctx.obj["app"]
 
     register_generators(generate)
-    app.load(environment, command_sync=sync)
+    app.load(environment)
 
 
 @app_cli.group()
@@ -54,10 +61,12 @@ def db():
 
 
 @app_cli.command()
+@option("--sync/--no-sync", default=True, help="Sync the application command.")
 @pass_context
-def run(ctx, environment, sync):
+def run(ctx, sync):
     app = ctx.obj["app"]
     bot = ctx.obj["bot"]
+    app.command_sync = sync
 
     _load_database(app)
     _show_application_info(app)
@@ -110,7 +119,7 @@ def _load_database(app):
 def _show_application_info(app):
     info(APP_INFO.format(
         discord_version=discord.__version__,
-        env=app.config.current_environment,
+        env=app.environment,
         pid=getpid(),
         command_sync=app.command_sync,
         database=app.database_infos["database"],
