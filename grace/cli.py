@@ -1,10 +1,11 @@
 import discord
 
-from os import getpid, getcwd
 from sys import path
-from logging import info
-from click import group, argument, option, pass_context
+from os import getpid, getcwd
+from logging import info, warning, critical
+from click import group, argument, option, pass_context, echo
 from grace.generator import register_generators
+from textwrap import dedent
 
 
 APP_INFO = """
@@ -18,13 +19,7 @@ APP_INFO = """
 
 @group()
 def cli():
-    # There's probably a better to create the group
     register_generators(generate)
-
-
-@cli.group()
-def generate():
-    pass
 
 
 @cli.command()
@@ -37,27 +32,82 @@ def new(ctx, name, database=True):
     cmd = generate.get_command(ctx, 'project')
     ctx.forward(cmd)
 
-
-@cli.command()
-@option("--environment", default='development')
-@option("--sync/--no-sync", default=True)
-def run(environment=None, sync=None):
-    path.insert(0, getcwd())
-
-    try:
-        from bot import app, run
-
-        _loading_application(app, environment, sync)
-        _load_database(app)
-        _show_application_info(app)
-
-        run()
-    except ImportError:
-        print("Unable to find a Grace project in this directory.")
+    echo(dedent(f"""
+      Done! Please do :\n
+        1. cd {name}
+        2. set your token in your .env
+        3. grace run
+    """))
 
 
-def _loading_application(app, environment, command_sync):
-    app.load(environment, command_sync=command_sync)
+@group()
+@option("--environment", default='development', help="The environment to load.")
+@pass_context
+def app_cli(ctx, environment):
+    app = ctx.obj["app"]
+
+    register_generators(generate)
+    app.load(environment)
+
+
+@app_cli.group()
+def generate():
+    pass
+
+
+@app_cli.group()
+def db():
+    pass
+
+
+@app_cli.command()
+@option("--sync/--no-sync", default=True, help="Sync the application command.")
+@pass_context
+def run(ctx, sync):
+    app = ctx.obj["app"]
+    bot = ctx.obj["bot"]
+    app.command_sync = sync
+
+    _load_database(app)
+    _show_application_info(app)
+
+    bot.run()
+
+
+@db.command()
+@pass_context
+def create(ctx):
+    app = ctx.obj["app"]
+
+    if app.database_exists:
+        return warning("Database already exists")
+
+    app.create_database()
+    app.create_tables()
+
+
+@db.command()
+@pass_context
+def drop(ctx):
+    app = ctx.obj["app"]
+
+    if not app.database_exists:
+        return warning("Database does not exist")
+
+    app.drop_tables()
+    app.drop_database()
+
+
+@db.command()
+@pass_context
+def seed(ctx):
+    app = ctx.obj["app"]
+
+    if not app.database_exists:
+        return warning("Database does not exist")
+
+    from db import seed
+    seed.seed_database()
 
 
 def _load_database(app):
@@ -65,10 +115,11 @@ def _load_database(app):
         app.create_database()
         app.create_tables()
 
+
 def _show_application_info(app):
     info(APP_INFO.format(
         discord_version=discord.__version__,
-        env=app.config.current_environment,
+        env=app.environment,
         pid=getpid(),
         command_sync=app.command_sync,
         database=app.database_infos["database"],
@@ -77,4 +128,10 @@ def _show_application_info(app):
 
 
 def main():
-    cli()
+    path.insert(0, getcwd())
+
+    try:
+        from bot import app, bot
+        app_cli(obj={"app": app, "bot": bot})
+    except ImportError:
+        cli()

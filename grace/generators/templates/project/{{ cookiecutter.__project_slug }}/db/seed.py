@@ -17,10 +17,9 @@ def seed_database():
     model.save()
 ```
 
-If you have many seeds or want a more structured approach to seeding,
-it is recommended to create a `db/seeds/` directory and organize your seeding
-scripts within that folder. You can then import your seeding modules into
-this script and call them as needed.
+If you have multiple seed file or prefer a structured approach, consider 
+creating a `db/seeds/` directory to organize your seeding scripts. 
+You can then import and execute these modules within this script as needed.
 """
 
 

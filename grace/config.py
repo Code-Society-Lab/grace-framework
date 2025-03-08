@@ -80,20 +80,6 @@ class Config:
         self.read("config/environment.cfg")
 
     @property
-    def database_uri(self) -> Union[str, URL]:
-        if self.database.get("url"):
-            return self.database.get("url")
-
-        return URL.create(
-            self.database["adapter"],
-            self.database.get("user"),
-            self.database.get("password"),
-            self.database.get("host"),
-            self.database.getint("port"),
-            self.database.get("database", self.database_name)
-        )
-
-    @property
     def database(self) -> SectionProxy:
         return self.__config[f"database.{self.__environment}"]
 
@@ -108,6 +94,20 @@ class Config:
     @property
     def current_environment(self) -> Optional[str]:
         return self.__environment
+
+    @property
+    def database_uri(self) -> Union[str, URL]:
+        if self.database.get("url"):
+            return self.database.get("url")
+
+        return URL.create(
+            self.database.get("adapter"),
+            self.database.get("user"),
+            self.database.get("password"),
+            self.database.get("host"),
+            self.database.getint("port"),
+            self.database.get("database", self.database_name)
+        )
 
     @property
     def database_name(self) -> str:

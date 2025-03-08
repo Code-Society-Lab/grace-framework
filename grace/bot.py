@@ -3,6 +3,7 @@ from discord import LoginFailure, Intents, ActivityType, Activity
 from discord.ext.commands import Bot as DiscordBot, when_mentioned_or
 from grace.application import Application, SectionProxy
 
+
 class Bot(DiscordBot):
     """This class is the bot core
 
