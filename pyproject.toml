@@ -24,7 +24,7 @@ dependencies = [
 	"alembic==1.8.1",
 	"cookiecutter",
 	"jinja2-strcase",
-	"jinja2_pluralize",
+	"inflect",
 	"mypy",
 	"pytest",
 	"flake8",

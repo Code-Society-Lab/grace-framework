@@ -22,6 +22,9 @@ def generator() -> Generator:
 ```
 
 """
+import inflect
+
+
 from click import Command, Group
 from pathlib import Path
 from grace.importer import import_package_modules
@@ -144,6 +147,7 @@ class Generator(Command):
         )
 
         env.filters['camel_case_to_space'] = _camel_case_to_space
+        env.filters['pluralize'] = lambda w: inflect.engine().plural(w)
 
         if not env.list_templates():
             raise NoTemplateError(f"No templates found in {template_dir}")
