@@ -27,6 +27,7 @@ import inflect
 
 from click import Command, Group
 from pathlib import Path
+from grace.application import Application
 from grace.importer import import_package_modules
 from grace.exceptions import GeneratorError, ValidationError, NoTemplateError
 from cookiecutter.main import cookiecutter
@@ -84,6 +85,8 @@ class Generator(Command):
 
         :raises GeneratorError: If the `NAME` attribute is not defined.
         """
+        self.app: Application | None = None
+
         if not self.NAME:
             raise GeneratorError("Generator name must be defined.")
 
@@ -92,6 +95,10 @@ class Generator(Command):
     @property
     def templates_path(self) -> Path:
         return Path(__file__).parent / 'generators' / 'templates'
+
+    def invoke(self, ctx):
+        self.app = ctx.obj.get("app")
+        return super().invoke(ctx)
 
     def generate(self, *args, **kwargs):
         """Generates template.

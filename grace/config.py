@@ -101,7 +101,7 @@ class Config:
             return self.database.get("url")
 
         return URL.create(
-            self.database.get("adapter"),
+            self.database.get("adapter", "sqlite"),
             self.database.get("user"),
             self.database.get("password"),
             self.database.get("host"),
@@ -139,10 +139,7 @@ class Config:
     def set_environment(self, environment: str):
         """Set the environment for the configuration.
 
-        :param environment: The environment to set. (Production, Development, Test)
+        :param environment: The environment to set.
         :type environment: str
         """
-        if environment in ["production", "development", "test"]:
-            self.__environment = environment
-        else:
-            raise EnvironmentError("You need to pass a valid environment. [Production, Development, Test]")
+        self.__environment = environment

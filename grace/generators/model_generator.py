@@ -2,6 +2,7 @@ from grace.generator import Generator
 from re import match
 from logging import info
 from click.core import Argument
+from grace.generators.migration_generator import generate_migration
 
 
 class ModelGenerator(Generator):

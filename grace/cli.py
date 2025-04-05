@@ -5,6 +5,7 @@ from os import getpid, getcwd
 from logging import info, warning, critical
 from click import group, argument, option, pass_context, echo
 from grace.generator import register_generators
+from grace.database import up_migration, down_migration
 from textwrap import dedent
 
 
@@ -46,8 +47,8 @@ def new(ctx, name, database=True):
 def app_cli(ctx, environment):
     app = ctx.obj["app"]
 
-    register_generators(generate)
     app.load(environment)
+    register_generators(generate)
 
 
 @app_cli.group()
@@ -108,6 +109,30 @@ def seed(ctx):
 
     from db import seed
     seed.seed_database()
+
+
+# TODO: Add revision #
+@db.command()
+@pass_context
+def up(ctx):
+    app = ctx.obj["app"]
+
+    if not app.database_exists:
+        return warning("Database does not exist")
+
+    up_migration(app)
+
+
+# TODO: Add revision #
+@db.command()
+@pass_context
+def down(ctx):
+    app = ctx.obj["app"]
+
+    if not app.database_exists:
+        return warning("Database does not exist")
+
+    down_migration(app)
 
 
 def _load_database(app):
