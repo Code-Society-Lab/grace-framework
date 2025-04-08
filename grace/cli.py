@@ -111,28 +111,28 @@ def seed(ctx):
     seed.seed_database()
 
 
-# TODO: Add revision #
 @db.command()
+@argument("revision", default='head')
 @pass_context
-def up(ctx):
+def up(ctx, revision):
     app = ctx.obj["app"]
 
     if not app.database_exists:
         return warning("Database does not exist")
 
-    up_migration(app)
+    up_migration(app, revision)
 
 
-# TODO: Add revision #
 @db.command()
+@argument("revision", default='head')
 @pass_context
-def down(ctx):
+def down(ctx, revision):
     app = ctx.obj["app"]
 
     if not app.database_exists:
         return warning("Database does not exist")
 
-    down_migration(app)
+    down_migration(app, revision)
 
 
 def _load_database(app):
