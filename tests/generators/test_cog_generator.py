@@ -1,8 +1,6 @@
 import pytest
-from unittest.mock import patch, mock_open
 from grace.generator import Generator
 from grace.generators.cog_generator import CogGenerator
-from pathlib import Path
 
 
 @pytest.fixture
@@ -29,16 +27,15 @@ def test_generate_cog(mocker, generator):
     )
 
 
-
 def test_validate_valid_name(generator):
     """Test if the validate method passes for a valid project name."""
     valid_name = "CogExample"
-    assert generator.validate(valid_name) == True
+    assert generator.validate(valid_name)
 
 
 def test_validate_invalid_name(generator):
     """Test if the validate method raises ValueError for name without a hyphen."""
-    assert generator.validate("cog-example") == False
-    assert generator.validate("cog_example") == False
-    assert generator.validate("Cog-Example") == False
-    assert generator.validate("Cog_Example") == False
+    assert not generator.validate("cog-example")
+    assert not generator.validate("cog_example")
+    assert not generator.validate("Cog-Example")
+    assert not generator.validate("Cog_Example")
