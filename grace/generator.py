@@ -22,12 +22,17 @@ def generator() -> Generator:
 ```
 
 """
+import inflect
+
+
 from click import Command, Group
 from pathlib import Path
+from grace.application import Application
 from grace.importer import import_package_modules
 from grace.exceptions import GeneratorError, ValidationError, NoTemplateError
 from cookiecutter.main import cookiecutter
 from jinja2 import Environment, PackageLoader, Template
+from typing import Any
 
 
 def register_generators(command_group: Group):
@@ -69,7 +74,7 @@ class Generator(Command):
     - `NAME`: The name of the generator command (must be defined by subclasses).
     - `OPTIONS`: A dictionary of additional Click options for the command.
     """
-    NAME: str = None
+    NAME: str | None = None
     OPTIONS: dict = {
 
     }
@@ -80,6 +85,8 @@ class Generator(Command):
 
         :raises GeneratorError: If the `NAME` attribute is not defined.
         """
+        self.app: Application | None = None
+
         if not self.NAME:
             raise GeneratorError("Generator name must be defined.")
 
@@ -88,6 +95,10 @@ class Generator(Command):
     @property
     def templates_path(self) -> Path:
         return Path(__file__).parent / 'generators' / 'templates'
+
+    def invoke(self, ctx):
+        self.app = ctx.obj.get("app")
+        return super().invoke(ctx)
 
     def generate(self, *args, **kwargs):
         """Generates template.
@@ -108,14 +119,14 @@ class Generator(Command):
         """Validates the arguments passed to the command."""
         return True
 
-    def generate_template(self, template_dir: str, variables: dict[str, any] = {}):
+    def generate_template(self, template_dir: str, variables: dict[str, Any] = {}):
         """Generates a template using Cookiecutter.
 
         :param template_dir: The name of the template to generate.
         :type template_dir: str
 
         :param variables: The variables to pass to the template. (default is {})
-        :type variables: dict[str, any]
+        :type variables: dict[str, Any]
         """
         template = str(self.templates_path / template_dir)
         cookiecutter(template, extra_context=variables, no_input=True)
@@ -123,7 +134,7 @@ class Generator(Command):
     def generate_file(
         self,
         template_dir: str,
-        variables: dict[str, any] = {},
+        variables: dict[str, Any] = {},
         output_dir: str = ""
     ):
         """Generate a module using jinja2 template.
@@ -132,17 +143,18 @@ class Generator(Command):
         :type template_dir: str
 
         :param variables: The variables to pass to the template. (default is {})
-        :type variables: dict[str, any]
+        :type variables: dict[str, Any]
 
         :param output_dir: The output directory for the generated template. (default is None)
         :type output_dir: str
         """
         env = Environment(
-            loader=PackageLoader("grace", self.templates_path / template_dir),
+            loader=PackageLoader('grace', str(self.templates_path / template_dir)),
             extensions=['jinja2_strcase.StrcaseExtension']
         )
 
         env.filters['camel_case_to_space'] = _camel_case_to_space
+        env.filters['pluralize'] = lambda w: inflect.engine().plural(w)
 
         if not env.list_templates():
             raise NoTemplateError(f"No templates found in {template_dir}")

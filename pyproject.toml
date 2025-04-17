@@ -24,6 +24,7 @@ dependencies = [
 	"alembic==1.8.1",
 	"cookiecutter",
 	"jinja2-strcase",
+	"inflect",
 	"mypy",
 	"pytest",
 	"flake8",
@@ -43,3 +44,7 @@ packages = ["grace"]
 
 [tool.mypy]
 exclude = ['grace/generators/templates']
+
+[[tool.mypy.overrides]]
+module = ["jinja2_pluralize.*", "cookiecutter.*"]
+follow_untyped_imports = true
