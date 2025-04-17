@@ -1,5 +1,14 @@
 from grace.application import Application
-from bot.{{ cookiecutter.__project_slug }} import {{ cookiecutter.__project_class }}
+
+
+def _create_bot(app):
+    """Factory to create the bot instance.
+
+    Import is deferred to avoid circular dependency.
+    """
+    from bot.{{ cookiecutter.__project_slug }} import {{ cookiecutter.__project_class }}
+    return {{ cookiecutter.__project_class }}(app)
+
 
 app = Application()
-bot = {{ cookiecutter.__project_class }}(app)
+bot = _create_bot(app)
