@@ -12,10 +12,10 @@ class ProjectGenerator(Generator):
     def generate(self, name: str, database: bool = True):
         info(f"Creating '{name}'")
 
-        self.generate_template(self.NAME, values={
+        self.generate_template(self.NAME, variables={
             "project_name": name,
-			"project_description": "",
-			"database": "yes" if database else "no"
+            "project_description": "",
+            "database": "yes" if database else "no"
         })
 
     def validate(self, name: str, **_kwargs) -> bool:
