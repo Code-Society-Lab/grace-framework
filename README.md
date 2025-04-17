@@ -20,10 +20,12 @@ Grace Framework was inspired by the evolution of our community discord bot, [Gra
 
 ## Getting Started
 #### 1- Install the package
-> ⚠️ *Python 3.10 or higher is required*
+**requirements**
+- Python 3.10 or higher
+- SQLite (or Postgresql, MySQL & MariaDB, Oracle, and MS-SQL)
 
 ```
-$ pip install git+https://github.com/Code-Society-Lab/grace-framework.git
+$ pip install grace-framework
 ```
 
 To install the development version:
