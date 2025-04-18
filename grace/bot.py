@@ -1,14 +1,17 @@
 from logging import info, warning, critical
 from discord import LoginFailure, Intents, ActivityType, Activity
 from discord.ext.commands import Bot as DiscordBot, when_mentioned_or
+from discord.message import Message
 from grace.application import Application, SectionProxy
+from typing import Callable, List, Union
 
 
 class Bot(DiscordBot):
-    """This class is the bot core
+    """This class is the core of the bot
 
-    This class is a subclass of `discord.ext.commands.Bot` and is the core of the bot.
-    It is responsible for loading the extensions and syncing the commands.
+    This class is a subclass of `discord.ext.commands.Bot` and is the core
+    of the bot. It is responsible for loading the extensions and 
+    syncing the commands.
 
     The bot is instantiated with the application object and the intents.
     """
@@ -17,19 +20,27 @@ class Bot(DiscordBot):
         self.app: Application = app
         self.config: SectionProxy = self.app.client
 
-        super().__init__(
-            command_prefix=when_mentioned_or(self.config.get("prefix")),
-            description=self.config.get("description"),
-            activity=Activity(type=ActivityType.playing),
-            intents=kwargs.get("intents", Intents.default()),
+        command_prefix = kwargs.pop(
+            'command_prefix',
+            when_mentioned_or(self.config.get("prefix", "!"))
+        )
+        description = kwargs.pop(
+            'description',
+            self.config.get("description")
         )
 
-    async def _load_extensions(self):
+        super().__init__(
+            command_prefix=command_prefix,
+            description=description,
+            **kwargs
+        )
+
+    async def _load_extensions(self) -> None:
         for module in self.app.extension_modules:
             info(f"Loading module '{module}'")
             await self.load_extension(module)
 
-    async def setup_hook(self):
+    async def setup_hook(self) -> None:
         await self._load_extensions()
 
         if self.app.command_sync:
@@ -38,7 +49,7 @@ class Bot(DiscordBot):
             guild = self.get_guild(self.config.get("client", "guild"))
             await self.tree.sync(guild=guild)
 
-    def run(self):
+    def run(self) -> None:
         """Run the bot
 
         Override the `run` method to handle the token retrieval
