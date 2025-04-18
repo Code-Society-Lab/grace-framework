@@ -1,9 +1,7 @@
 from logging import info, warning, critical
-from discord import LoginFailure, Intents, ActivityType, Activity
+from discord import LoginFailure
 from discord.ext.commands import Bot as DiscordBot, when_mentioned_or
-from discord.message import Message
 from grace.application import Application, SectionProxy
-from typing import Callable, List, Union
 
 
 class Bot(DiscordBot):
@@ -24,7 +22,7 @@ class Bot(DiscordBot):
             'command_prefix',
             when_mentioned_or(self.config.get("prefix", "!"))
         )
-        description = kwargs.pop(
+        description: str = kwargs.pop(
             'description',
             self.config.get("description")
         )
@@ -46,10 +44,11 @@ class Bot(DiscordBot):
         if self.app.command_sync:
             warning("Syncing application commands. This may take some time.")
 
-            guild = self.get_guild(self.config.get("client", "guild"))
-            await self.tree.sync(guild=guild)
+            if guild_id := self.config.get("guild"):
+                guild = self.get_guild(int(guild_id))
+                await self.tree.sync(guild=guild)
 
-    def run(self) -> None:
+    def run(self) -> None: # type: ignore[override]
         """Run the bot
 
         Override the `run` method to handle the token retrieval
