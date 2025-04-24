@@ -1,5 +1,5 @@
 from logging import info, warning, critical
-from discord import LoginFailure
+from discord import Intents, LoginFailure
 from discord.ext.commands import Bot as DiscordBot, when_mentioned_or
 from grace.application import Application, SectionProxy
 
@@ -26,10 +26,15 @@ class Bot(DiscordBot):
             'description',
             self.config.get("description")
         )
+        intents: Intents = kwargs.pop(
+            'intents',
+            Intents.default()
+        )
 
         super().__init__(
             command_prefix=command_prefix,
             description=description,
+            intents=intents,
             **kwargs
         )
 
