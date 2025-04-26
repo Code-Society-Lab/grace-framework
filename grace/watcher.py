@@ -3,48 +3,84 @@ import asyncio
 import importlib.util
 
 from pathlib import Path
+from typing import Callable, Coroutine, Any, Union
 from logging import WARNING, getLogger, info, error
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
 
+# Suppress verbose watchdog logs
 getLogger("watchdog").setLevel(WARNING)
 
 
+ReloadCallback = Callable[[str], Coroutine[Any, Any, None]]
+
+
 class Watcher:
-    def __init__(self, bot):
-        self.bot = bot
+    """
+    Wrapper around the watchdog observer that watches a specified
+    directory (./bot) for Python file changes and manages event handling.
+
+    :param bot: The bot instance, must implement `on_reload()` and `unload_extension()`.
+    :type bot: Callable
+    """
+    def __init__(self, callback: ReloadCallback):
+        self.callback = callback
         self.observer = Observer()
         self.watch_path = "./bot"
 
         self.observer.schedule(
-            BotEventHandler(self.bot, self.watch_path),
+            BotEventHandler(self.callback, self.watch_path),
             self.watch_path,
             recursive=True
         )
 
-    def start(self):
+    def start(self) -> None:
+        """Starts the file system observer."""
         info("Starting file watcher...")
         self.observer.start()
 
-    def stop(self):
+    def stop(self) -> None:
+        """Stops the file system observer and waits for it to shut down."""
         info("Stopping file watcher...")
         self.observer.stop()
         self.observer.join()
 
 
 class BotEventHandler(FileSystemEventHandler):
-    def __init__(self, bot, base_path: Path):
-        self.bot = bot
+    """
+    Handles file events in the bot directory and calls the provided 
+    async callback.
+
+    :param callback: Async function to call with the module name.
+    :type callback: Callable[[str], Coroutine]
+    :param base_path: Directory path to watch.
+    :type base_path: Path or str
+    """
+    def __init__(self, callback: ReloadCallback, base_path: Union[Path, str]):
+        self.callback = callback
         self.bot_path = Path(base_path).resolve()
 
     def path_to_module_name(self, path: Path) -> str:
-        relative_path = path.resolve().relative_to(bot_path)
-        parts = relative_path.with_suffix('').parts
+        """
+        Converts a file path to a Python module name.
 
+        :param path: Full path to the Python file.
+        :type path: Path
+        :return: Dotted module path (e.g., 'bot.module.sub').
+        :rtype: str
+        """
+        relative_path = path.resolve().relative_to(self.bot_path)
+        parts = relative_path.with_suffix('').parts
         return '.'.join(['bot'] + list(parts))
 
-    def reload_module(self, module_name: str):
+    def reload_module(self, module_name: str) -> None:
+        """
+        Reloads a module if it's already in sys.modules.
+
+        :param module_name: Dotted module name to reload.
+        :type module_name: str
+        """
         try:
             if module_name in sys.modules:
                 info(f"Reloading module '{module_name}'")
@@ -52,39 +88,60 @@ class BotEventHandler(FileSystemEventHandler):
         except Exception as e:
             error(f"Failed to reload module {module_name}: {e}")
 
-    def run_coro(self, coro):
-        """Run coroutine safely inside running event loop."""
+    def run_coro(self, coro: Coroutine[Any, Any, None]) -> None:
+        """
+        Runs a coroutine in the current or a new event loop.
+
+        :param coro: Coroutine to run.
+        :type coro: Coroutine
+        """
         try:
             loop = asyncio.get_running_loop()
             asyncio.ensure_future(coro)
         except RuntimeError:
             asyncio.run(coro)
 
-    def on_modified(self, event):
-        if event.is_directory:
-            return
+    def on_modified(self, event: FileSystemEvent) -> None:
+        """
+        Handles modified Python files by reloading them and calling the callback.
 
-        module_path = Path(event.src_path)
-        if module_path.suffix != '.py':
-            return
+        :param event: The filesystem event.
+        :type event: FileSystemEvent
+        """
+        try:
+            if event.is_directory:
+                return
 
-        module_name = self.path_to_module_name(module_path)
-        if not module_name:
-            return
+            module_path = Path(event.src_path)
+            if module_path.suffix != '.py':
+                return
 
-        self.reload_module(module_name)
-        self.run_coro(self.bot.on_reload())
+            module_name = self.path_to_module_name(module_path)
+            if not module_name:
+                return
 
-    def on_deleted(self, event):
-        if event.is_directory:
-            return
+            self.reload_module(module_name)
+            self.run_coro(self.callback())
+        except Exception as e:
+            error(f"Failed to reload module {module_name}: {e}")
 
-        module_path = Path(event.src_path)
-        if module_path.suffix != '.py':
-            return
 
-        module_name = self.path_to_module_name(module_path)
-        if not module_name:
-            return
+    def on_deleted(self, event: FileSystemEvent) -> None:
+        """
+        Handles deleted Python files by calling the callback with the module name.
 
-        self.run_coro(self.bot.unload_extension(module_name))
+        :param event: The filesystem event.
+        :type event: FileSystemEvent
+        """
+        try:
+            module_path = Path(event.src_path)
+            if module_path.suffix != '.py':
+                return
+
+            module_name = self.path_to_module_name(module_path)
+            if not module_name:
+                return
+
+            self.run_coro(self.callback())
+        except Exception as e:
+            error(f"Failed to reload module {module_name}: {e}")

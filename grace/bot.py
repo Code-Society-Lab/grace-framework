@@ -23,7 +23,7 @@ class Bot(DiscordBot):
     def __init__(self, app: Application, **kwargs):
         self.app: Application = app
         self.config: SectionProxy = self.app.client
-        self.watcher: Watcher = Watcher(self)
+        self.watcher: Watcher = Watcher(self.on_reload)
 
         command_prefix = kwargs.pop(
             'command_prefix',
