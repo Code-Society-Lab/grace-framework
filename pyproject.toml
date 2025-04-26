@@ -31,7 +31,8 @@ dependencies = [
 	"flake8",
 	"pytest-mock",
 	"coverage",
-	"watchdog"
+	"watchdog",
+	"apscheduler"
 ]
 
 [project.urls]
