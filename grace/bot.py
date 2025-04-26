@@ -9,7 +9,6 @@ from grace.application import Application, SectionProxy
 from grace.watcher import Watcher, Observer
 
 
-
 class Bot(DiscordBot):
     """This class is the core of the bot
 
@@ -92,10 +91,7 @@ class Bot(DiscordBot):
             await self.load_extension(module)
 
     def run(self) -> None: # type: ignore[override]
-        """Run the bot
-
-        Override the `run` method to handle the token retrieval
-        """
+        """Override the `run` method to handle the token retrieval"""
         try:
             if self.app.token:
                 super().run(self.app.token)
