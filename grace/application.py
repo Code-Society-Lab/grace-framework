@@ -21,7 +21,6 @@ from sqlalchemy_utils import (
     create_database,
     drop_database
 )
-
 from pathlib import Path
 from grace.config import Config
 from grace.exceptions import ConfigError
@@ -48,6 +47,7 @@ class Application:
         self.__engine: Union[Engine, None] = None
 
         self.command_sync: bool = True
+        self.watch: bool = False
 
     @property
     def base(self) -> DeclarativeMeta:
@@ -109,15 +109,16 @@ class Application:
                 return extension
         return None
 
-    def load(self, environment: str, command_sync: bool = True):
+    def load(self, environment: str, **kwargs):
         """
         Sets the environment and loads all the component of the application
         """
-
-        self.command_sync = command_sync
-        self.environment = environment
+        self.environment: str = environment
+        self.watch: bool = kwargs.get("watch", False)
+        self.command_sync: bool = kwargs.get("command_sync", True)
 
         self.config.set_environment(environment)
+
         self.load_logs()
         self.load_models()
         self.load_database()
