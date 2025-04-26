@@ -13,7 +13,7 @@ from watchdog.observers import Observer
 getLogger("watchdog").setLevel(WARNING)
 
 
-ReloadCallback = Callable[[str], Coroutine[Any, Any, None]]
+ReloadCallback = Callable[[], Coroutine[Any, Any, None]]
 
 
 class Watcher:
@@ -24,10 +24,10 @@ class Watcher:
     :param bot: The bot instance, must implement `on_reload()` and `unload_extension()`.
     :type bot: Callable
     """
-    def __init__(self, callback: ReloadCallback):
-        self.callback = callback
-        self.observer = Observer()
-        self.watch_path = "./bot"
+    def __init__(self, callback: ReloadCallback) -> None:
+        self.callback: ReloadCallback = callback
+        self.observer: Observer = Observer()
+        self.watch_path: str = "./bot"
 
         self.observer.schedule(
             BotEventHandler(self.callback, self.watch_path),
@@ -88,18 +88,13 @@ class BotEventHandler(FileSystemEventHandler):
         except Exception as e:
             error(f"Failed to reload module {module_name}: {e}")
 
-    def run_coro(self, coro: Coroutine[Any, Any, None]) -> None:
-        """
-        Runs a coroutine in the current or a new event loop.
-
-        :param coro: Coroutine to run.
-        :type coro: Coroutine
-        """
+    def run_callback(self) -> None:
+        """Runs a coroutine callback in the current or a new event loop."""
         try:
             loop = asyncio.get_running_loop()
-            asyncio.ensure_future(coro)
+            asyncio.ensure_future(self.callback())
         except RuntimeError:
-            asyncio.run(coro)
+            asyncio.run(self.callback())
 
     def on_modified(self, event: FileSystemEvent) -> None:
         """
@@ -121,7 +116,7 @@ class BotEventHandler(FileSystemEventHandler):
                 return
 
             self.reload_module(module_name)
-            self.run_coro(self.callback())
+            self.run_callback()
         except Exception as e:
             error(f"Failed to reload module {module_name}: {e}")
 
