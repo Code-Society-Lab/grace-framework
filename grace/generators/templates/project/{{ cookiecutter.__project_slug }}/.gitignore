@@ -1,0 +1,17 @@
+__pycache__
+.env
+.idea
+.fleet
+venv
+channel_store
+build/
+tmp/
+env/
+lib64/
+.mypy_cache/
+.pytest_cache
+.coverage
+*.egg-info
+*.db
+*.log
+*.log.*

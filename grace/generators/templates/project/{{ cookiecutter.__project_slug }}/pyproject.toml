@@ -1,0 +1,19 @@
+# https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm>=8"]
+
+[project]
+name = "{{ cookiecutter.project_name }}"
+version = "0.1.0"
+authors = [
+    {name="Your name"}
+]
+description = "{{ cookiecutter.project_description }}"
+
+dependencies = [
+    "grace-framework",
+    # Add your dependencies here
+]
+
+[tool.setuptools]
+packages = ["bot"]
