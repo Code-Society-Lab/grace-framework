@@ -67,7 +67,7 @@ class Config:
     instantiate a second or multiple Config object, they will all share the
     same environment. This is to say, that the config objects are identical.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         load_dotenv(".env")
 
         self.__environment: Optional[str] = None
@@ -96,7 +96,7 @@ class Config:
         return self.__environment
 
     @property
-    def database_uri(self) -> Union[str, URL]:
+    def database_uri(self) -> Union[str, URL, None]:
         if self.database.get("url"):
             return self.database.get("url")
 

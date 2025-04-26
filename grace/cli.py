@@ -14,6 +14,7 @@ APP_INFO = """
 | PID: {pid}
 | Environment: {env}
 | Syncing command: {command_sync}
+| Watcher enabled: {watch}
 | Using database: {database} with {dialect}
 """.rstrip()
 
@@ -63,10 +64,13 @@ def db():
 
 @app_cli.command()
 @option("--sync/--no-sync", default=True, help="Sync the application command.")
+@option("--watch/--no-watch", default=False, help="Enables hot reload.")
 @pass_context
-def run(ctx, sync):
+def run(ctx, sync, watch):
     app = ctx.obj["app"]
     bot = ctx.obj["bot"]
+
+    app.watch = watch
     app.command_sync = sync
 
     _load_database(app)
@@ -147,6 +151,7 @@ def _show_application_info(app):
         env=app.environment,
         pid=getpid(),
         command_sync=app.command_sync,
+        watch=app.watch,
         database=app.database_infos["database"],
         dialect=app.database_infos["dialect"],
     ))

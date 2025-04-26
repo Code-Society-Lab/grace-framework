@@ -5,7 +5,7 @@ from logging import basicConfig, critical
 from logging.handlers import RotatingFileHandler
 
 from types import ModuleType
-from typing import Generator, Any, Union, Dict
+from typing import Generator, Any, Union, Dict, no_type_check
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
@@ -21,11 +21,13 @@ from sqlalchemy_utils import (
     create_database,
     drop_database
 )
-
 from pathlib import Path
 from grace.config import Config
 from grace.exceptions import ConfigError
 from grace.importer import find_all_importables, import_module
+
+
+ConfigReturn = Union[str, int, float, None]
 
 
 class Application:
@@ -38,16 +40,17 @@ class Application:
     __session: Union[Session, None] = None
     __base: DeclarativeMeta = declarative_base()
 
-    def __init__(self):
+    def __init__(self) -> None:
         database_config_path: Path = Path("config/database.cfg")
         
         if not database_config_path.exists():
             raise ConfigError("Unable to find the 'database.cfg' file.")
 
-        self.__token: str = self.config.get("discord", "token")
+        self.__token: str = str(self.config.get("discord", "token"))
         self.__engine: Union[Engine, None] = None
 
         self.command_sync: bool = True
+        self.watch: bool = False
 
     @property
     def base(self) -> DeclarativeMeta:
@@ -55,9 +58,10 @@ class Application:
 
     @property
     def token(self) -> str:
-        return self.__token
+        return str(self.__token)
 
     @property
+    @no_type_check
     def session(self) -> Session:
         """Instantiate the session for querying the database."""
 
@@ -109,15 +113,13 @@ class Application:
                 return extension
         return None
 
-    def load(self, environment: str, command_sync: bool = True):
+    def load(self, environment: str):
         """
         Sets the environment and loads all the component of the application
         """
-
-        self.command_sync = command_sync
-        self.environment = environment
-
+        self.environment: str = environment
         self.config.set_environment(environment)
+
         self.load_logs()
         self.load_models()
         self.load_database()
@@ -129,7 +131,7 @@ class Application:
         for module in find_all_importables(models):
             import_module(module)
 
-    def load_logs(self):
+    def load_logs(self) -> None:
         file_handler: RotatingFileHandler = RotatingFileHandler(
             f"logs/{self.config.current_environment}.log",
             maxBytes=10000,
