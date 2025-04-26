@@ -1,4 +1,4 @@
-from logging import info, debug, warning, critical
+from logging import info, warning, critical
 from discord import Intents, LoginFailure
 from discord.ext.commands import Bot as DiscordBot, when_mentioned_or
 from discord.ext.commands.errors import (
@@ -76,13 +76,13 @@ class Bot(DiscordBot):
         try:
             await super().load_extension(name)
         except ExtensionAlreadyLoaded:
-            debug(f"Extension '{name}' already loaded, skipping.")
+            warning(f"Extension '{name}' already loaded, skipping.")
 
     async def unload_extension(self, name: str) -> None:
         try:
             await super().unload_extension(name)
         except ExtensionNotLoaded:
-            debug(f"Extension '{name}' was not loaded, skipping.")
+            warning(f"Extension '{name}' was not loaded, skipping.")
 
     async def on_reload(self):
         for module in self.app.extension_modules:

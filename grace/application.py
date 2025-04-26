@@ -109,14 +109,11 @@ class Application:
                 return extension
         return None
 
-    def load(self, environment: str, **kwargs):
+    def load(self, environment: str):
         """
         Sets the environment and loads all the component of the application
         """
         self.environment: str = environment
-        self.watch: bool = kwargs.get("watch", False)
-        self.command_sync: bool = kwargs.get("command_sync", True)
-
         self.config.set_environment(environment)
 
         self.load_logs()
