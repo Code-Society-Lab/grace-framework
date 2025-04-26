@@ -8,6 +8,9 @@ from discord.ext.commands.errors import (
 from grace.application import Application, SectionProxy
 from grace.watcher import Watcher, Observer
 
+# make discord.ext.commands importable from this module
+from discord.ext.commands import *
+
 
 class Bot(DiscordBot):
     """This class is the core of the bot
