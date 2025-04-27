@@ -1,4 +1,5 @@
 from logging import info, warning, critical
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from discord import Intents, LoginFailure
 from discord.ext.commands import Bot as DiscordBot, when_mentioned_or
 from discord.ext.commands.errors import (
@@ -6,7 +7,7 @@ from discord.ext.commands.errors import (
     ExtensionAlreadyLoaded
 )
 from grace.application import Application, SectionProxy
-from grace.watcher import Watcher, Observer
+from grace.watcher import Watcher
 
 # make discord.ext.commands importable from this module
 from discord.ext.commands import *
@@ -22,9 +23,10 @@ class Bot(DiscordBot):
     The bot is instantiated with the application object and the intents.
     """
 
-    def __init__(self, app: Application, **kwargs):
+    def __init__(self, app: Application, **kwargs) -> None:
         self.app: Application = app
         self.config: SectionProxy = self.app.client
+        self.scheduler: AsyncIOScheduler = AsyncIOScheduler()
         self.watcher: Watcher = Watcher(self.on_reload)
 
         command_prefix = kwargs.pop(
@@ -47,12 +49,12 @@ class Bot(DiscordBot):
             **kwargs
         )
 
-    async def _load_extensions(self) -> None:
+    async def load_extensions(self) -> None:
         for module in self.app.extension_modules:
             info(f"Loading module '{module}'")
             await self.load_extension(module)
 
-    async def _sync_commands(self) -> None:
+    async def sync_commands(self) -> None:
         warning("Syncing application commands. This may take some time.")
 
         if guild_id := self.config.get("guild"):
@@ -66,13 +68,15 @@ class Bot(DiscordBot):
         await super().invoke(ctx)
 
     async def setup_hook(self) -> None:
-        await self._load_extensions()
+        await self.load_extensions()
 
         if self.app.command_sync:
-            await self._sync_commands()
+            await self.sync_commands()
 
         if self.app.watch:
             self.watcher.start()
+
+        self.scheduler.start()
 
     async def load_extension(self, name: str) -> None:
         try:
