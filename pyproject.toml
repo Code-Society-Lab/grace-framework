@@ -5,8 +5,10 @@ requires = ["setuptools>=64", "setuptools_scm>=8"]
 name = "grace-framework"
 version = "0.10.6-alpha"
 authors = [
-	{ name="Code Society Lab" },
-	{ name="Simon Roy", email="simon.roy1211@gmail.com" }
+	{ name="Simon Roy" }
+]
+maintainers = [
+	{ name="Code Society Lab", email="admin@codesociety.xyz" }
 ]
 description = "Extensible Discord bot framework based on Discord.py"
 readme = "README.md"
