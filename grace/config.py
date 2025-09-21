@@ -132,7 +132,7 @@ class Config:
             fallback=fallback
         )
 
-        if value and match(r"^[\d.]*$|^(?:True|False)*$", value):
+        if value and match(r"^[\d.]*$|^(?:True|False)*$|\[(.*?)\]", value):
             return literal_eval(value)
         return value
 
