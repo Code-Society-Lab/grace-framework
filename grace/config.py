@@ -3,15 +3,22 @@ from re import match
 from ast import literal_eval
 from dotenv import load_dotenv
 from sqlalchemy.engine import URL
-from typing import MutableMapping, Mapping, Optional, Union
-from configparser import ConfigParser, BasicInterpolation, NoOptionError, SectionProxy
+from typing import MutableMapping, Mapping, Optional, Union, Any
+from configparser import (
+    ConfigParser,
+    BasicInterpolation,
+    NoOptionError,
+    SectionProxy
+)
+
+ConfigValue = Optional[Union[str, int, float, bool, list]]
 
 
 class EnvironmentInterpolation(BasicInterpolation):
     """Interpolation which expands environment variables in values.
 
-    With this literal '${NAME}', the config will process the value from the given
-    environment variable and use it as it's value in the config.
+    With this literal '${NAME}', the config will process the value from the
+    given environment variable and use it as it's value in the config.
 
     This includes exported environment variable (ex. 'export MY_VAR=...') and
     variable in '.env' files.
@@ -20,8 +27,8 @@ class EnvironmentInterpolation(BasicInterpolation):
         token = ${MY_SECRET_VAR}
 
     In the example above, token will take the value of the environment variable
-    called 'MY_SECRET_VAR'. In case 'MY_SECRET_VAR' doesn't exist, the value will
-    not be evaluated.
+    called 'MY_SECRET_VAR'. In case 'MY_SECRET_VAR' doesn't exist, the value
+    will not be evaluated.
     """
 
     def before_get(
@@ -46,8 +53,9 @@ class EnvironmentInterpolation(BasicInterpolation):
         """
         value = super().before_get(parser, section, option, value, defaults)
         expandvars: str = path.expandvars(value)
+        between_brackets = value.startswith("${") and value.endswith("}")
 
-        if (value.startswith("${") and value.endswith("}")) and value == expandvars:
+        if between_brackets and value == expandvars:
             try:
                 return str(parser.get(section, value))
             except NoOptionError:
@@ -117,15 +125,20 @@ class Config:
         """Read the configuration file."""
         self.__config.read(file)
 
-    def get(self, section_key, value_key, fallback=None) -> Optional[Union[str, int, float, bool]]:
+    def get(
+        self,
+        section_key: str,
+        value_key: str,
+        fallback: Any = None
+    ) -> ConfigValue:
         """Get the value from the configuration file.
 
         :param section_key: The section key to get the value from.
         :type section_key: str
         :param value_key: The value key to get the value from.
         :type value_key: str
-        :param fallback: The value to return if the value is not found (default: None).
-        :type fallback: Optional[Union[str, int, float, bool]]
+        :param fallback: The value to return if not found (default: None).
+        :type fallback: Optional[Union[str, int, float, bool, list]]
         """
         value: str = self.__config.get(
             section_key, value_key,

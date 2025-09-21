@@ -1,3 +1,4 @@
+from os import environ
 from configparser import SectionProxy
 
 from coloredlogs import install
@@ -5,7 +6,7 @@ from logging import basicConfig, critical
 from logging.handlers import RotatingFileHandler
 
 from types import ModuleType
-from typing import Generator, Any, Union, Dict, no_type_check
+from typing import Generator, Any, Union, Dict, Optional, no_type_check
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
@@ -113,12 +114,12 @@ class Application:
                 return extension
         return None
 
-    def load(self, environment: str):
+    def load(self, env: Optional[str] = None):
         """
         Sets the environment and loads all the component of the application
         """
-        self.environment: str = environment
-        self.config.set_environment(environment)
+        self.environment = env or environ.get("GRACE_ENV") or "development"
+        self.config.set_environment(self.environment)
 
         self.load_logs()
         self.load_models()

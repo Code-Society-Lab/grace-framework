@@ -2,12 +2,11 @@ import discord
 
 from sys import path
 from os import getpid, getcwd
-from logging import info, warning, critical
+from logging import info, warning
 from click import group, argument, option, pass_context, echo
 from grace.generator import register_generators
 from grace.database import up_migration, down_migration
 from textwrap import dedent
-
 
 APP_INFO = """
 | Discord.py version: {discord_version}
@@ -43,7 +42,7 @@ def new(ctx, name, database=True):
 
 
 @group()
-@option("--environment", default='development', help="The environment to load.")
+@option("--environment", help="The environment to load.")
 @pass_context
 def app_cli(ctx, environment):
     app = ctx.obj["app"]
