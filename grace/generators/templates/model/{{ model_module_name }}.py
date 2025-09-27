@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer{{ ", {}".format(','.join(model_column_types)) }}
+from sqlalchemy import Column, {{ ", {}".format(','.join(model_column_types)) }}
 from bot import app
 from grace.model import Model
 

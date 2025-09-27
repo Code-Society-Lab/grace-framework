@@ -3,6 +3,7 @@ from re import match
 from logging import info
 from click.core import Argument
 from grace.generators.migration_generator import generate_migration
+from jinja2_strcase.jinja2_strcase import to_snake
 
 
 class ModelGenerator(Generator):
@@ -21,8 +22,9 @@ class ModelGenerator(Generator):
         a SQLAlchemy-style definition. You can specify column names and types
         during generation using the format `column_name:Type`.
 
-        Supported types are any valid SQLAlchemy column types (e.g., `String`, `Integer`,
-        `Boolean`, etc.). See https://docs.sqlalchemy.org/en/20/core/types.html
+        Supported types are any valid SQLAlchemy column types
+        (e.g., `String`, `Integer`, `Boolean`, etc.).
+        See https://docs.sqlalchemy.org/en/20/core/types.html
 
         Example:
         ```bash
@@ -38,6 +40,7 @@ class ModelGenerator(Generator):
             self.NAME,
             variables={
                 "model_name": name,
+                "model_module_name": to_snake(name),
                 "model_columns": model_columns,
                 "model_column_types": types
             },
