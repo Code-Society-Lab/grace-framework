@@ -119,13 +119,17 @@ class Generator(Command):
         """Validates the arguments passed to the command."""
         return True
 
-    def generate_template(self, template_dir: str, variables: dict[str, Any] = {}):
+    def generate_template(
+        self,
+        template_dir: str,
+        variables: dict[str, Any] = {}
+    ):
         """Generates a template using Cookiecutter.
 
         :param template_dir: The name of the template to generate.
         :type template_dir: str
 
-        :param variables: The variables to pass to the template. (default is {})
+        :param variables: The variables to pass to the template. (default: {})
         :type variables: dict[str, Any]
         """
         template = str(self.templates_path / template_dir)
@@ -142,14 +146,19 @@ class Generator(Command):
         :param template_dir: The name of the template to generate.
         :type template_dir: str
 
-        :param variables: The variables to pass to the template. (default is {})
+        :param variables: The variables to pass to the template.
+                          (default is {})
         :type variables: dict[str, Any]
 
-        :param output_dir: The output directory for the generated template. (default is None)
+        :param output_dir: The output directory for the generated template.
+                           (default is None)
         :type output_dir: str
         """
         env = Environment(
-            loader=PackageLoader('grace', str(self.templates_path / template_dir)),
+            loader=PackageLoader(
+                'grace',
+                str(self.templates_path / template_dir)
+            ),
             extensions=['jinja2_strcase.StrcaseExtension']
         )
 
