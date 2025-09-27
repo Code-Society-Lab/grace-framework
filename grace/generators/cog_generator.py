@@ -2,6 +2,7 @@ from grace.generator import Generator
 from re import match
 from logging import info
 from click.core import Argument
+from jinja2_strcase.jinja2_strcase import to_snake
 
 
 class CogGenerator(Generator):
@@ -20,6 +21,7 @@ class CogGenerator(Generator):
             self.NAME,
             variables={
                 "cog_name": name,
+                "cog_module_name": to_snake(name),
                 "cog_description": description,
             },
             output_dir="bot/extensions"
