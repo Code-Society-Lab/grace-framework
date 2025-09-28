@@ -15,12 +15,12 @@ class ProjectGenerator(Generator):
 
         self.generate_template(self.NAME, variables={
             "project_name": name,
-			"project_description": "",
+            "project_description": "",
             "database": database
         })
 
         if database:
-            # Should probably be moved into it's own generator so we can
+            # Should probably be moved into its own generator so we can
             # generate add the database later on.
             db_generator().generate(output_dir=name)
 

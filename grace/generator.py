@@ -27,14 +27,15 @@ from pathlib import Path
 from grace.importer import import_package_modules
 from grace.exceptions import GeneratorError, ValidationError, NoTemplateError
 from cookiecutter.main import cookiecutter
-from jinja2 import Environment, PackageLoader, Template
+from jinja2 import Environment, PackageLoader
 
 
 def register_generators(command_group: Group):
     """Registers generator commands to the given Click command group.
 
-    This function dynamically imports all modules in the `grace.generators` package 
-    and registers each module's `generator` command to the provided `command_group`.
+    This function dynamically imports all modules in the `grace.generators`
+    package and registers each module's `generator` command to the provided
+    `command_group`.
 
     :param command_group: The Click command group to register the generators to.
     :type command_group: Group

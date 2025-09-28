@@ -8,8 +8,10 @@ class DatabaseGenerator(Generator):
     OPTIONS = {}
 
     def generate(self, output_dir: str = ""):
-        info(f"Creating database")
-        self.generate_template(self.NAME, output_dir=output_dir)
+        info(f"Creating database at {output_dir}")
+        self.generate_template(self.NAME, variables={
+            "output_dir": output_dir
+        })
 
     def validate(self, *_args, **_kwargs) -> bool:
         return True

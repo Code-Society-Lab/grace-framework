@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import call
 from grace.generator import Generator
 from grace.generators.project_generator import ProjectGenerator
 
@@ -12,14 +13,22 @@ def test_generate_project_with_database(mocker, generator):
     """Test if the generate method creates the correct template with a database."""
     mock_generate_template = mocker.patch.object(Generator, 'generate_template')
     name = "example-project"
-    
+
     generator.generate(name, database=True)
 
-    mock_generate_template.assert_called_once_with('project', values={
-        'project_name': name,
-        'project_description': '',
-        'database': 'yes'
-    })
+    expected_calls = [
+        call('project', variables={
+            'project_name': name,
+            'project_description': '',
+            'database': True
+        }),
+        call('database', variables={
+            'output_dir': name
+        })
+    ]
+
+    mock_generate_template.assert_has_calls(expected_calls)
+    assert mock_generate_template.call_count == 2
 
 
 def test_generate_project_without_database(mocker, generator):
@@ -29,10 +38,10 @@ def test_generate_project_without_database(mocker, generator):
     
     generator.generate(name, database=False)
 
-    mock_generate_template.assert_called_once_with('project', values={
+    mock_generate_template.assert_called_once_with('project', variables={
         'project_name': name,
         'project_description': '',
-        'database': 'no'
+        'database': False
     })
 
 
