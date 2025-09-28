@@ -8,7 +8,7 @@ from logging.handlers import RotatingFileHandler
 from types import ModuleType
 from typing import Generator, Any, Union, Dict, Optional, no_type_check
 
-from sqlalchemy import create_engine
+from sqlmodel import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import (
@@ -23,6 +23,7 @@ from sqlalchemy_utils import (
     drop_database
 )
 from pathlib import Path
+from grace.model import Model
 from grace.config import Config
 from grace.exceptions import ConfigError
 from grace.importer import find_all_importables, import_module
@@ -167,6 +168,8 @@ class Application:
                 self.__engine.connect()
             except OperationalError as e:
                 critical(f"Unable to load the 'database': {e}")
+
+        Model.set_engine(self.__engine)
 
     def unload_database(self):
         """Unloads the current database"""
