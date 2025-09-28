@@ -147,10 +147,10 @@ class Application:
 
         install(
             self.config.environment.get("log_level"),
-            fmt=(
+            fmt="".join([
                 "[%(asctime)s] %(programname)s %(funcName)s ",
                 "%(module)s %(levelname)s %(message)s"
-            ),
+            ]),
             programname=self.config.current_environment,
         )
 
