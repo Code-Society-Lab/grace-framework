@@ -57,7 +57,7 @@ class Bot(DiscordBot):
     async def sync_commands(self) -> None:
         warning("Syncing application commands. This may take some time.")
 
-        if guild_id := self.config.get("guild"):
+        if guild_id := self.config.get("guild_id"):
             guild = self.get_guild(int(guild_id))
             await self.tree.sync(guild=guild)
 
