@@ -13,7 +13,7 @@ maintainers = [
 description = "Extensible Discord bot framework based on Discord.py"
 readme = "README.md"
 license = { file="LICENSE" }
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 
 dependencies = [
 	"discord>2.0",
