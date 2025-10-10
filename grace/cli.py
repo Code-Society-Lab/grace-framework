@@ -162,5 +162,5 @@ def main():
     try:
         from bot import app, bot
         app_cli(obj={"app": app, "bot": bot})
-    except ImportError:
+    except ModuleNotFoundError:
         cli()
