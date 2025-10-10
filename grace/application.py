@@ -8,14 +8,11 @@ from logging.handlers import RotatingFileHandler
 from types import ModuleType
 from typing import Generator, Any, Union, Dict, Optional, no_type_check
 
-from sqlmodel import create_engine
+from sqlmodel import Session, create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import (
     declarative_base,
-    sessionmaker,
-    scoped_session,
-    Session,
     DeclarativeMeta,
 )
 from sqlalchemy_utils import database_exists, create_database, drop_database
@@ -66,9 +63,9 @@ class Application:
         """Instantiate the session for querying the database."""
 
         if not self.__session:
-            session_factory: sessionmaker = sessionmaker(bind=self.__engine)
-            scoped_session_ = scoped_session(session_factory)
-            self.__session = scoped_session_()
+            # session_factory: sessionmaker = sessionmaker(bind=self.__engine)
+            # scoped_session_ = scoped_session(session_factory)
+            self.__session = Session(self.__engine)
 
         return self.__session
 
@@ -168,7 +165,7 @@ class Application:
             except OperationalError as e:
                 critical(f"Unable to load the 'database': {e}")
 
-        Model.set_session(self.session)
+        Model.set_engine(self.__engine)
 
     def unload_database(self):
         """Unloads the current database"""
