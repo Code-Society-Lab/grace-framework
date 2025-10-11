@@ -8,21 +8,16 @@ from logging.handlers import RotatingFileHandler
 from types import ModuleType
 from typing import Generator, Any, Union, Dict, Optional, no_type_check
 
-from sqlalchemy import create_engine
+from sqlmodel import Session, create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import (
     declarative_base,
-    sessionmaker,
-    Session,
-    DeclarativeMeta
+    DeclarativeMeta,
 )
-from sqlalchemy_utils import (
-    database_exists,
-    create_database,
-    drop_database
-)
+from sqlalchemy_utils import database_exists, create_database, drop_database
 from pathlib import Path
+from grace.model import Model
 from grace.config import Config
 from grace.exceptions import ConfigError
 from grace.importer import find_all_importables, import_module
@@ -43,13 +38,14 @@ class Application:
 
     def __init__(self) -> None:
         database_config_path: Path = Path("config/database.cfg")
-        
+
         if not database_config_path.exists():
             raise ConfigError("Unable to find the 'database.cfg' file.")
 
         self.__token: str = str(self.config.get("discord", "token"))
         self.__engine: Union[Engine, None] = None
 
+        self.environment: str = "development"
         self.command_sync: bool = True
         self.watch: bool = False
 
@@ -67,8 +63,9 @@ class Application:
         """Instantiate the session for querying the database."""
 
         if not self.__session:
-            session: sessionmaker = sessionmaker(bind=self.__engine)
-            self.__session = session()
+            # session_factory: sessionmaker = sessionmaker(bind=self.__engine)
+            # scoped_session_ = scoped_session(session_factory)
+            self.__session = Session(self.__engine)
 
         return self.__session
 
@@ -99,7 +96,7 @@ class Application:
     def database_infos(self) -> Dict[str, str]:
         return {
             "dialect": self.session.bind.dialect.name,
-            "database": self.session.bind.url.database
+            "database": self.session.bind.url.database,
         }
 
     @property
@@ -134,9 +131,7 @@ class Application:
 
     def load_logs(self) -> None:
         file_handler: RotatingFileHandler = RotatingFileHandler(
-            f"logs/{self.config.current_environment}.log",
-            maxBytes=10000,
-            backupCount=5
+            f"logs/{self.config.current_environment}.log", maxBytes=10000, backupCount=5
         )
 
         basicConfig(
@@ -147,10 +142,12 @@ class Application:
 
         install(
             self.config.environment.get("log_level"),
-            fmt="".join([
-                "[%(asctime)s] %(programname)s %(funcName)s ",
-                "%(module)s %(levelname)s %(message)s"
-            ]),
+            fmt="".join(
+                [
+                    "[%(asctime)s] %(programname)s %(funcName)s ",
+                    "%(module)s %(levelname)s %(message)s",
+                ]
+            ),
             programname=self.config.current_environment,
         )
 
@@ -159,7 +156,7 @@ class Application:
 
         self.__engine = create_engine(
             self.config.database_uri,
-            echo=self.config.environment.getboolean("sqlalchemy_echo")
+            echo=self.config.environment.getboolean("sqlalchemy_echo"),
         )
 
         if self.database_exists:
@@ -167,6 +164,8 @@ class Application:
                 self.__engine.connect()
             except OperationalError as e:
                 critical(f"Unable to load the 'database': {e}")
+
+        Model.set_engine(self.__engine)
 
     def unload_database(self):
         """Unloads the current database"""
@@ -176,7 +175,7 @@ class Application:
 
     def reload_database(self):
         """
-        Reload the database. This function can be use in case
+        Reload the database. This function can be used in case
         there's a dynamic environment change.
         """
 

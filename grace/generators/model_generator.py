@@ -34,7 +34,7 @@ class ModelGenerator(Generator):
         info(f"Generating model '{name}'")
 
         columns, types = self.extract_columns(params)
-        model_columns = map(lambda c: f"{c[0]} = Column({c[1]})", columns)
+        model_columns = map(lambda c: f"{c[0]}: {c[1]}", columns)
 
         self.generate_file(
             self.NAME,
@@ -65,7 +65,7 @@ class ModelGenerator(Generator):
 
     def extract_columns(self, params: tuple[str]) -> tuple[list, list]:
         columns = []
-        types = ['Integer']
+        types = []
 
         for param in params:
             name, type = param.split(':')

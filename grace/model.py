@@ -1,202 +1,178 @@
-from typing import Any, Optional, List, Tuple
-from sqlalchemy.orm import Query
-from sqlalchemy.exc import PendingRollbackError, IntegrityError
-from bot import app
+from sqlmodel import *
+from sqlalchemy import Engine
+from typing import TYPE_CHECKING, TypeVar, Type, List, Optional, Self, Any, Union
+from sqlmodel.main import SQLModelMetaclass
+from sqlalchemy.sql import ColumnElement
+
+if TYPE_CHECKING:
+    from sqlmodel.sql._expression_select_gen import Select, SelectOfScalar
+    from sqlmodel import SQLModel, Session, select, func
 
 
-class Model:
-    """
-    Base class for all models, providing a collection of methods to query,
-    create, and manipulate database records.
+T = TypeVar("T", bound="Model")
 
-    This class offers a streamlined interface for interacting with the
-    database through SQLAlchemy, including querying records, filtering results,
-    creating new instances, and handling transactions.
-    """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class _ModelMeta(SQLModelMetaclass):
+    """Metaclass to make table=True the default"""
 
-    @classmethod
-    def query(cls) -> Query:
-        """
-        Return the model query object
+    def __new__(cls, name, bases, namespace, **kwargs):
+        if name != "Model":
+            if "table" not in kwargs:
+                kwargs["table"] = True
+        return super().__new__(cls, name, bases, namespace, **kwargs)
 
-        :usage
-            Model.query()
 
-         :raises
-            PendingRollbackError, IntegrityError:
-                In case an exception is thrown during the query,
-                the system will roll back
-        """
+class Query:
+    def __init__(self, model_class: Type[T]):
+        self.model_class = model_class
+        self.engine: Engine = model_class.get_engine()
+        self.statement: Union[Select, SelectOfScalar] = select(model_class)
 
-        try:
-            return app.session.query(cls)
-        except (PendingRollbackError, IntegrityError):
-            app.session.rollback()
-            raise
+    def where(self, *conditions) -> Self:
+        for condition in conditions:
+            self.statement = self.statement.where(condition)
+        return self
 
-    @classmethod
-    def get(cls, primary_key_identifier: int) -> Any:
-        """
-        Retrieve and returns the records with the given primary key identifier.
-        None if none is found.
+    def unique(self, column_: ColumnElement) -> Self:
+        self.statement = select(
+            distinct(column_)
+        ).select_from(self.statement.subquery())
+        return self
 
-        :usage
-            Model.get(5)
+    def order_by(self, *args, **kwargs) -> Self:
+        for key, direction in kwargs.items():
+            column_ = getattr(self.model_class, key, None)
+            if column_ is None:
+                raise AttributeError(f"{self.model_class.__name__} has no column '{key}'")
 
-        :raises
-            PendingRollbackError, IntegrityError:
-                In case an exception is thrown during the query,
-                the system will rollback
-        """
+            if isinstance(direction, str):
+                if direction.lower() == "asc":
+                    args += (asc(column_),)
+                elif direction.lower() == "desc":
+                    args += (desc(column_),)
+                else:
+                    raise ValueError(f"Order direction for '{key}' must be 'asc' or 'desc'")
+            else:
+                # Allow passing SQLAlchemy ordering objects directly
+                args += (direction,)
 
-        return cls.query().get(primary_key_identifier)
+        if args:
+            self.statement = self.statement.order_by(*args)
+        return self
 
-    @classmethod
-    def get_by(cls, **kwargs: Any):
-        """
-        Retrieve and returns the record with the given keyword argument.
-        None if none is found.
+    def limit(self, count: int) -> Self:
+        self.statement = self.statement.limit(count)
+        return self
 
-        Only one argument should be passed. If more than one argument
-        are supplied, a TypeError will be thrown by the function.
+    def offset(self, count: int) -> Self:
+        self.statement = self.statement.offset(count)
+        return self
 
-        :usage
-            Model.get_by(name="Dr.Strange")
+    def all(self) -> List[T]:
+        with Session(self.engine) as session:
+            return list(session.exec(self.statement).all())
 
-        :raises
-            PendingRollbackError, IntegrityError, TypeError:
-                In case an exception is thrown during the query,
-                the system will rollback
-        """
-        kwargs_count = len(kwargs)
+    def first(self) -> Optional[T]:
+        with Session(self.engine) as session:
+            return session.exec(self.statement).first()
 
-        if kwargs_count > 1:
-            raise TypeError(
-                f"Only one argument is accepted ({kwargs_count} given)"
+    def one(self) -> Type[T]:
+        with Session(self.engine) as session:
+            return session.exec(self.statement).one()
+
+    def count(self) -> int:
+        with Session(self.engine) as session:
+            count_statement: SelectOfScalar[int] = select(func.count()).select_from(
+                self.statement.subquery()
             )
+            return session.exec(count_statement).one()
 
-        return cls.where(**kwargs).first()
+
+class Model(SQLModel, metaclass=_ModelMeta):
+    _engine: Engine | None = None
 
     @classmethod
-    def all(cls) -> List:
-        """
-        Retrieve and returns all records of the model
+    def set_engine(cls, engine: Engine):
+        cls._engine = engine
 
-        :usage
-            Model.all()
-        """
+    @classmethod
+    def get_engine(cls) -> Engine:
+        """Get the current session"""
+        if cls._engine is None:
+            raise RuntimeError(
+                f"No session set for {cls.__name__}. Call Model.set_engine() first."
+            )
+        return cls._engine
 
+    @classmethod
+    def query(cls: Type[T]) -> Query:
+        return Query(cls)
+
+    @classmethod
+    def where(cls: Type[T], *conditions) -> Query:
+        return cls.query().where(*conditions)
+
+    @classmethod
+    def unique(cls, column_: ColumnElement) -> Query:
+        return cls.query().unique(column_)
+
+    @classmethod
+    def order_by(cls, *args, **kwargs) -> Query:
+        return cls.query().order_by(*args, **kwargs)
+
+    @classmethod
+    def find(cls: Type[T], id_: Any) -> Optional[T]:
+        with Session(cls.get_engine()) as session:
+            return session.get(cls, id_)
+
+    @classmethod
+    def find_by(cls: Type[T], **kwargs) -> Optional[T]:
+        if not kwargs:
+            raise ValueError("At least one keyword argument must be provided.")
+
+        with Session(cls.get_engine()) as session:
+            query = select(cls)
+
+            for key, value in kwargs.items():
+                column_ = getattr(cls, key, None)
+
+                if column_ is None:
+                    raise AttributeError(f"{cls.__name__} has no column '{key}'")
+                query = query.where(column_ == value)
+
+            return session.exec(query).first()
+
+    @classmethod
+    def all(cls: Type[T]) -> List[T]:
         return cls.query().all()
 
     @classmethod
-    def first(cls, limit: int = 1) -> Query:
-        """
-        Retrieve N first records
-
-        :usage
-            Model.first()
-            Model.first(limit=100)
-        """
-
-        if limit == 1:
-            return cls.query().first()
-        # noinspection PyUnresolvedReferences
-        return cls.query().limit(limit).all()
+    def first(cls: Type[T]) -> Optional[T]:
+        return cls.query().first()
 
     @classmethod
-    def where(cls, **kwargs: Any) -> Query:
-        """
-        Retrieve and returns all records filtered by the given conditions
-
-        :usage
-            Model.where(name="some name", id=5)
-        """
-
-        return cls.query().filter_by(**kwargs)
-
-    @classmethod
-    def filter(cls, *criterion: Tuple[Any]) -> Query:
-        """
-        Shorter way to call the sqlalchemy query filter method
-
-        :usage
-            Model.filter(Model.id > 5)
-        """
-
-        return app.session.query(cls).filter(*criterion)
-
-    @classmethod
-    def count(cls) -> int:
-        """
-        Returns the number of records for the model
-
-        :usage
-            Model.count()
-        """
-
+    def count(cls: Type[T]) -> int:
         return cls.query().count()
 
     @classmethod
-    def create(cls, auto_save: bool = True, **kwargs: Optional[Any]) -> Any:
-        """
-        Creates, saves and return a new instance of the model.
+    def create(cls: Type[T], **kwargs) -> T:
+        instance = cls(**kwargs)
+        return instance.save()
 
-        :usage
-            Model.create(name="A name", color="Blue")
-        """
-        model = cls(**kwargs)
+    def save(self: T) -> T:
+        with Session(self.get_engine()) as session:
+            session.add(self)
+            session.commit()
+            session.refresh(self)
+            return self
 
-        if auto_save:
-            model.save()
-        return model
+    def delete(self) -> None:
+        with Session(self.get_engine()) as session:
+            session.delete(self)
+            session.commit()
 
-    def save(self, commit: bool = True):
-        """
-        Saves the model. If commit is set to `True` it will "[f]lush pending
-        changes and commit the current transaction.". For more information
-        about `commit`, read sqlalchemy docs.
-
-        :usage
-            model.save()
-
-        :raises
-            PendingRollbackError, IntegrityError:
-                In case an exception is thrown during the query,
-                the system will rollback
-        """
-
-        try:
-            app.session.add(self)
-
-            if commit:
-                app.session.commit()
-        except (PendingRollbackError, IntegrityError):
-            app.session.rollback()
-            raise
-
-    def delete(self, commit: bool = True):
-        """
-        Delete the model. If commit is set to `True` it will "flush pending
-        changes and commit the current transaction.". For more information
-        about `commit`, read sqlalchemy docs.
-
-        :usage
-            model.delete()
-
-        :raises
-            PendingRollbackError, IntegrityError:
-                In case an exception is thrown during the query,
-                the system will rollback
-        """
-
-        try:
-            app.session.delete(self)
-
-            if commit:
-                app.session.commit()
-        except (PendingRollbackError, IntegrityError):
-            app.session.rollback()
-            raise
+    def update(self, **kwargs) -> Self:
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+        return self.save()
