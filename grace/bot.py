@@ -1,6 +1,6 @@
 from logging import info, warning, critical
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from discord import Intents, LoginFailure
+from discord import Intents, LoginFailure, Object as DiscordObject
 from discord.ext.commands import Bot as DiscordBot, when_mentioned_or
 from discord.ext.commands.errors import (
     ExtensionNotLoaded,
@@ -58,7 +58,7 @@ class Bot(DiscordBot):
         warning("Syncing application commands. This may take some time.")
 
         if guild_id := self.config.get("guild_id"):
-            guild = self.get_guild(int(guild_id))
+            guild = DiscordObject(id=guild_id)
             await self.tree.sync(guild=guild)
 
     async def invoke(self, ctx):
