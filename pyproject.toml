@@ -56,12 +56,28 @@ packages = ["grace"]
 license-files = []
 
 [tool.mypy]
-exclude = ['grace/generators/templates']
+exclude = '''
+/(
+    \.direnv
+  | \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.venv
+  | venv
+  | \.svn
+  | _build
+  | buck-out
+  | build
+  | dist
+  | __pypackages__
+  | grace/generators/templates
+)/
+'''
 
 [[tool.mypy.overrides]]
 module = ["jinja2_pluralize.*", "cookiecutter.*"]
 follow_untyped_imports = true
-
 
 [tool.black]
 exclude = '''

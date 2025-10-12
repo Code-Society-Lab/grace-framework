@@ -1,4 +1,4 @@
-from grace.model import Model, Field
+from grace.model import Field, Model
 
 
 class {{ model_name | to_camel }}(Model):

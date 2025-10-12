@@ -1,12 +1,14 @@
-from sqlmodel import *
+from typing import (TYPE_CHECKING, Any, List, Optional, Self, Type, TypeVar,
+                    Union)
+
 from sqlalchemy import Engine
-from typing import TYPE_CHECKING, TypeVar, Type, List, Optional, Self, Any, Union
-from sqlmodel.main import SQLModelMetaclass
 from sqlalchemy.sql import ColumnElement
+from sqlmodel import *
+from sqlmodel.main import SQLModelMetaclass
 
 if TYPE_CHECKING:
+    from sqlmodel import Session, SQLModel, func, select
     from sqlmodel.sql._expression_select_gen import Select, SelectOfScalar
-    from sqlmodel import SQLModel, Session, select, func
 
 
 T = TypeVar("T", bound="Model")

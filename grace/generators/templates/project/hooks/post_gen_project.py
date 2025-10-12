@@ -1,5 +1,5 @@
-import os, shutil
-
+import os
+import shutil
 
 options = {"db": "{{ cookiecutter.database }}"}
 

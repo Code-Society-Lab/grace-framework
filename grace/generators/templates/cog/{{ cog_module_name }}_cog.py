@@ -1,5 +1,6 @@
-from grace.bot import Bot
 from discord.ext.commands import Cog
+
+from grace.bot import Bot
 
 
 class {{ cog_name | to_camel }}Cog(Cog, name="{{ cog_name | camel_case_to_space }}"{{ ', description="{}"'.format(cog_description) if cog_description }}):

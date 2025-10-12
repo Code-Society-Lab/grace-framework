@@ -1,7 +1,9 @@
-from grace.generator import Generator
-from click.core import Argument
 from logging import info
+
+from click.core import Argument
+
 from grace.database import generate_migration
+from grace.generator import Generator
 
 
 class MigrationGenerator(Generator):

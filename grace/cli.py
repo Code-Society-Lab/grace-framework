@@ -1,12 +1,13 @@
-import discord
-
-from sys import path
-from os import getpid, getcwd
 from logging import info, warning
-from click import group, argument, option, pass_context, echo
-from grace.generator import register_generators
-from grace.database import up_migration, down_migration
+from os import getcwd, getpid
+from sys import path
 from textwrap import dedent
+
+import discord
+from click import argument, echo, group, option, pass_context
+
+from grace.database import down_migration, up_migration
+from grace.generator import register_generators
 
 APP_INFO = """
 | Discord.py version: {discord_version}

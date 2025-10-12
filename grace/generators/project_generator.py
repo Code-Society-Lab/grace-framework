@@ -1,6 +1,7 @@
-from grace.generator import Generator
-from re import match
 from logging import info
+from re import match
+
+from grace.generator import Generator
 
 
 class ProjectGenerator(Generator):

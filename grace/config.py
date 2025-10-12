@@ -1,10 +1,12 @@
+from ast import literal_eval
+from configparser import (BasicInterpolation, ConfigParser, NoOptionError,
+                          SectionProxy)
 from os import path
 from re import match
-from ast import literal_eval
+from typing import Any, Mapping, MutableMapping, Optional, Union
+
 from dotenv import load_dotenv
 from sqlalchemy.engine import URL
-from typing import MutableMapping, Mapping, Optional, Union, Any
-from configparser import ConfigParser, BasicInterpolation, NoOptionError, SectionProxy
 
 ConfigValue = Optional[Union[str, int, float, bool, list]]
 

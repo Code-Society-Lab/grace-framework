@@ -1,11 +1,11 @@
+from importlib import import_module
+from itertools import chain
 from logging import warning
 from os import walk
-from pkgutil import walk_packages
-from itertools import chain
 from pathlib import Path, PurePath
+from pkgutil import walk_packages
 from types import ModuleType
-from typing import Set, Any, Generator
-from importlib import import_module
+from typing import Any, Generator, Set
 
 
 def import_package_modules(

@@ -1,4 +1,5 @@
 import pytest
+
 from grace.generator import Generator
 from grace.generators.project_generator import ProjectGenerator
 

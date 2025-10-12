@@ -1,27 +1,22 @@
-from os import environ
 from configparser import SectionProxy
-
-from coloredlogs import install
 from logging import basicConfig, critical
 from logging.handlers import RotatingFileHandler
-
+from os import environ
+from pathlib import Path
 from types import ModuleType
-from typing import Generator, Any, Union, Dict, Optional, no_type_check
+from typing import Any, Dict, Generator, Optional, Union, no_type_check
 
-from sqlmodel import Session, create_engine
+from coloredlogs import install
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import (
-    declarative_base,
-    DeclarativeMeta,
-)
-from sqlalchemy_utils import database_exists, create_database, drop_database
-from pathlib import Path
-from grace.model import Model
+from sqlalchemy.orm import DeclarativeMeta, declarative_base
+from sqlalchemy_utils import create_database, database_exists, drop_database
+from sqlmodel import Session, create_engine
+
 from grace.config import Config
 from grace.exceptions import ConfigError
 from grace.importer import find_all_importables, import_module
-
+from grace.model import Model
 
 ConfigReturn = Union[str, int, float, None]
 

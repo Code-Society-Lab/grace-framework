@@ -1,9 +1,11 @@
-from grace.generator import Generator
-from re import match
 from logging import info
+from re import match
+
 from click.core import Argument
-from grace.generators.migration_generator import generate_migration
 from jinja2_strcase.jinja2_strcase import to_snake
+
+from grace.generator import Generator
+from grace.generators.migration_generator import generate_migration
 
 
 class ModelGenerator(Generator):

@@ -1,9 +1,9 @@
-from alembic.config import Config
-from alembic.command import revision, upgrade, downgrade, show
-from alembic.util.exc import CommandError
-from logging import info, fatal
+from logging import fatal, info
 
+from alembic.command import downgrade, revision, show, upgrade
+from alembic.config import Config
 from alembic.script import ScriptDirectory
+from alembic.util.exc import CommandError
 
 
 def generate_migration(app, message):

@@ -1,8 +1,9 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-from grace.generator import Generator
+
 from grace.exceptions import ValidationError
-from grace.generator import register_generators
+from grace.generator import Generator, register_generators
 
 
 class MockGenerator(Generator):

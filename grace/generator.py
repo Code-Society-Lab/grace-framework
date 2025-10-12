@@ -23,17 +23,17 @@ def generator() -> Generator:
 
 """
 
-import inflect
-
-
-from click import Command, Group
 from pathlib import Path
-from grace.application import Application
-from grace.importer import import_package_modules
-from grace.exceptions import GeneratorError, ValidationError, NoTemplateError
+from typing import Any
+
+import inflect
+from click import Command, Group
 from cookiecutter.main import cookiecutter
 from jinja2 import Environment, PackageLoader
-from typing import Any
+
+from grace.application import Application
+from grace.exceptions import GeneratorError, NoTemplateError, ValidationError
+from grace.importer import import_package_modules
 
 
 def register_generators(command_group: Group):

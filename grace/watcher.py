@@ -1,13 +1,12 @@
-import sys
 import asyncio
 import importlib.util
-
+import sys
+from logging import WARNING, error, getLogger, info
 from pathlib import Path
-from typing import Callable, Coroutine, Any, Union
-from logging import WARNING, getLogger, info, error
+from typing import Any, Callable, Coroutine, Union
+
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
-
 
 # Suppress verbose watchdog logs
 getLogger("watchdog").setLevel(WARNING)

@@ -1,5 +1,6 @@
-from grace.bot import Bot
 from logging import info
+
+from grace.bot import Bot
 
 
 class {{ cookiecutter.__project_class }}(Bot):
