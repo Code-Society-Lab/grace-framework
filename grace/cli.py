@@ -162,5 +162,7 @@ def main():
     try:
         from bot import app, bot
         app_cli(obj={"app": app, "bot": bot})
-    except ModuleNotFoundError:
-        cli()
+    except ModuleNotFoundError as e:
+        if e.name in ['app', 'bot']:
+            cli()
+        raise e
