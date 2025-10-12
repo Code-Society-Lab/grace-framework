@@ -12,16 +12,6 @@ if TYPE_CHECKING:
 T = TypeVar("T", bound="Model")
 
 
-class _ModelMeta(SQLModelMetaclass):
-    """Metaclass to make table=True the default"""
-
-    def __new__(cls, name, bases, namespace, **kwargs):
-        if name != "Model":
-            if "table" not in kwargs:
-                kwargs["table"] = True
-        return super().__new__(cls, name, bases, namespace, **kwargs)
-
-
 class Query:
     def __init__(self, model_class: Type[T]):
         self.model_class = model_class
@@ -88,6 +78,33 @@ class Query:
             return session.exec(count_statement).one()
 
 
+class _ModelMeta(SQLModelMetaclass):
+    """
+    Metaclass to make table=True the default and delegates
+    queries to the Query class
+    """
+
+    def __new__(cls, name, bases, namespace, **kwargs):
+        if name != "Model":
+            if "table" not in kwargs:
+                kwargs["table"] = True
+        return super().__new__(cls, name, bases, namespace, **kwargs)
+
+    def __getattr__(cls, name: str):
+        if name.startswith("_") or name in {"get_engine", "set_engine", "query"}:
+            raise AttributeError(name)
+
+        query_instance = cls.query()
+        if hasattr(query_instance, name):
+            attr = getattr(query_instance, name)
+            if callable(attr):
+                def wrapper(*args, **kwargs):
+                    return attr(*args, **kwargs)
+                return wrapper
+            return attr
+        raise AttributeError(f"{cls.__name__} has no attribute '{name}'")
+
+
 class Model(SQLModel, metaclass=_ModelMeta):
     _engine: Engine | None = None
 
@@ -107,18 +124,6 @@ class Model(SQLModel, metaclass=_ModelMeta):
     @classmethod
     def query(cls: Type[T]) -> Query:
         return Query(cls)
-
-    @classmethod
-    def where(cls: Type[T], *conditions) -> Query:
-        return cls.query().where(*conditions)
-
-    @classmethod
-    def unique(cls, column_: ColumnElement) -> Query:
-        return cls.query().unique(column_)
-
-    @classmethod
-    def order_by(cls, *args, **kwargs) -> Query:
-        return cls.query().order_by(*args, **kwargs)
 
     @classmethod
     def find(cls: Type[T], id_: Any) -> Optional[T]:
@@ -141,18 +146,6 @@ class Model(SQLModel, metaclass=_ModelMeta):
                 query = query.where(column_ == value)
 
             return session.exec(query).first()
-
-    @classmethod
-    def all(cls: Type[T]) -> List[T]:
-        return cls.query().all()
-
-    @classmethod
-    def first(cls: Type[T]) -> Optional[T]:
-        return cls.query().first()
-
-    @classmethod
-    def count(cls: Type[T]) -> int:
-        return cls.query().count()
 
     @classmethod
     def create(cls: Type[T], **kwargs) -> T:
