@@ -18,6 +18,44 @@ class Query:
         self.engine: Engine = model_class.get_engine()
         self.statement: Union[Select, SelectOfScalar] = select(model_class)
 
+    def find(self, value: Any) -> Optional[T]:
+        """
+        Finds a record by its primary key (id only).
+
+        Returns `None` if the record does not exist.
+
+        ## Examples
+        ```python
+        user = User.find(1)
+        ```
+        """
+        mapper = inspect(self.model_class)
+        pk_columns = mapper.primary_key
+
+        if not pk_columns:
+            raise ValueError(f"No primary key defined for {self.model_class.__name__}")
+
+        if len(pk_columns) > 1:
+            raise ValueError("Composite primary keys are not yet supported")
+
+        return self.where(pk_columns[0] == value).first()
+
+    def find_by(self, **kwargs) -> Optional[T]:
+        """
+        Finds the first record matching the provided conditions.
+
+        Equivalent to calling `.query().where(...).first()`.
+
+        ## Examples
+        ```python
+        User.find_by(name="Alice")
+        User.find_by(email="alice@example.com", active=True)
+        ```
+        """
+        if not kwargs:
+            raise ValueError("At least one keyword argument must be provided.")
+        return self.where(**kwargs).first()
+
     def where(self, *conditions, **kwargs) -> Self:
         """
         Adds one or more filtering conditions to the query.
@@ -287,39 +325,6 @@ class Model(SQLModel, metaclass=_ModelMeta):
         ```
         """
         return Query(cls)
-
-    @classmethod
-    def find(cls: Type[T], id_: Any) -> Optional[T]:
-        """
-        Finds a record by its primary key.
-
-        Returns `None` if the record does not exist.
-
-        ## Examples
-        ```python
-        user = User.find(1)
-        ```
-        """
-        with Session(cls.get_engine()) as session:
-            return session.get(cls, id_)
-
-    @classmethod
-    def find_by(cls: Type[T], **kwargs) -> Optional[T]:
-        """
-        Finds the first record matching the provided conditions.
-
-        Equivalent to calling `.query().where(...).first()`.
-
-        ## Examples
-        ```python
-        User.find_by(name="Alice")
-        User.find_by(email="alice@example.com", active=True)
-        ```
-        """
-        if not kwargs:
-            raise ValueError("At least one keyword argument must be provided.")
-
-        cls.query().where(**kwargs).first()
 
     @classmethod
     def create(cls: Type[T], **kwargs) -> T:
