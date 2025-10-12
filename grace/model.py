@@ -78,7 +78,9 @@ class Query:
         for key, value in kwargs.items():
             column_ = getattr(self.model_class, key, None)
             if column_ is None:
-                raise AttributeError(f"{self.model_class.__name__} has no column '{key}'")
+                raise AttributeError(
+                    f"{self.model_class.__name__} has no column '{key}'"
+                )
             conditions += (column_ == value,)
 
         for condition in conditions:
@@ -96,9 +98,9 @@ class Query:
         User.query().unique(User.email).all()
         ```
         """
-        self.statement = select(
-            distinct(column_)
-        ).select_from(self.statement.subquery())
+        self.statement = select(distinct(column_)).select_from(
+            self.statement.subquery()
+        )
         return self
 
     def order_by(self, *args, **kwargs) -> Self:
@@ -118,7 +120,9 @@ class Query:
         for key, direction in kwargs.items():
             column_ = getattr(self.model_class, key, None)
             if column_ is None:
-                raise AttributeError(f"{self.model_class.__name__} has no column '{key}'")
+                raise AttributeError(
+                    f"{self.model_class.__name__} has no column '{key}'"
+                )
 
             if isinstance(direction, str):
                 if direction.lower() == "asc":
@@ -126,7 +130,9 @@ class Query:
                 elif direction.lower() == "desc":
                     args += (desc(column_),)
                 else:
-                    raise ValueError(f"Order direction for '{key}' must be 'asc' or 'desc'")
+                    raise ValueError(
+                        f"Order direction for '{key}' must be 'asc' or 'desc'"
+                    )
             else:
                 # Allow passing SQLAlchemy ordering objects directly
                 args += (direction,)
@@ -268,8 +274,10 @@ class _ModelMeta(SQLModelMetaclass):
         if hasattr(query_instance, name):
             attr = getattr(query_instance, name)
             if callable(attr):
+
                 def wrapper(*args, **kwargs):
                     return attr(*args, **kwargs)
+
                 return wrapper
             return attr
         raise AttributeError(f"{cls.__name__} has no attribute '{name}'")

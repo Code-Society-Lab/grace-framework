@@ -9,8 +9,7 @@ from importlib import import_module
 
 
 def import_package_modules(
-    package: ModuleType,
-    shallow: bool = True
+    package: ModuleType, shallow: bool = True
 ) -> Generator[ModuleType, None, None]:
     """Import all modules in the package and yield them in order.
 
@@ -23,10 +22,7 @@ def import_package_modules(
         yield import_module(module)
 
 
-def find_all_importables(
-    package: ModuleType,
-    shallow: bool = True
-) -> Set[str]:
+def find_all_importables(package: ModuleType, shallow: bool = True) -> Set[str]:
     """Find importable modules in the project and return them in order.
 
     :param package: The package to search for importable.
@@ -44,9 +40,7 @@ def find_all_importables(
 
 # TODO : Add proper types
 def _discover_importable_path(
-    pkg_pth: Path,
-    pkg_name: str,
-    shallow: bool
+    pkg_pth: Path, pkg_name: str, shallow: bool
 ) -> Generator[Any, Any, Any]:
     """Yield all importable packages under a given path and package.
 
@@ -63,22 +57,25 @@ def _discover_importable_path(
     for dir_path, _d, file_names in walk(pkg_pth):
         pkg_dir_path: Path = Path(dir_path)
 
-        if pkg_dir_path.parts[-1] == '__pycache__':
+        if pkg_dir_path.parts[-1] == "__pycache__":
             continue
 
-        if all(Path(_).suffix != '.py' for _ in file_names):
+        if all(Path(_).suffix != ".py" for _ in file_names):
             continue
 
         rel_pt: PurePath = pkg_dir_path.relative_to(pkg_pth)
-        pkg_pref: str = '.'.join((pkg_name, ) + rel_pt.parts)
+        pkg_pref: str = ".".join((pkg_name,) + rel_pt.parts)
 
-        if '__init__.py' not in file_names:
-            warning(f"'{pkg_dir_path}' seems to be missing an '__init__.py'. This might cause issues.")
+        if "__init__.py" not in file_names:
+            warning(
+                f"'{pkg_dir_path}' seems to be missing an '__init__.py'. This might cause issues."
+            )
 
         yield from (
             pkg_path
             for _, pkg_path, _ in walk_packages(
-                (str(pkg_dir_path), ), prefix=f'{pkg_pref}.',
+                (str(pkg_dir_path),),
+                prefix=f"{pkg_pref}.",
             )
         )
 

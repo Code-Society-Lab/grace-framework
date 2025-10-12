@@ -24,6 +24,7 @@ class Watcher:
     :param bot: The bot instance, must implement `on_reload()` and `unload_extension()`.
     :type bot: Callable
     """
+
     def __init__(self, callback: ReloadCallback) -> None:
         self.callback: ReloadCallback = callback
         self.observer: Observer = Observer()
@@ -32,7 +33,7 @@ class Watcher:
         self.observer.schedule(
             BotEventHandler(self.callback, self.watch_path),
             self.watch_path,
-            recursive=True
+            recursive=True,
         )
 
     def start(self) -> None:
@@ -49,7 +50,7 @@ class Watcher:
 
 class BotEventHandler(FileSystemEventHandler):
     """
-    Handles file events in the bot directory and calls the provided 
+    Handles file events in the bot directory and calls the provided
     async callback.
 
     :param callback: Async function to call with the module name.
@@ -57,6 +58,7 @@ class BotEventHandler(FileSystemEventHandler):
     :param base_path: Directory path to watch.
     :type base_path: Path or str
     """
+
     def __init__(self, callback: ReloadCallback, base_path: Union[Path, str]):
         self.callback = callback
         self.bot_path = Path(base_path).resolve()
@@ -71,8 +73,8 @@ class BotEventHandler(FileSystemEventHandler):
         :rtype: str
         """
         relative_path = path.resolve().relative_to(self.bot_path)
-        parts = relative_path.with_suffix('').parts
-        return '.'.join(['bot'] + list(parts))
+        parts = relative_path.with_suffix("").parts
+        return ".".join(["bot"] + list(parts))
 
     def reload_module(self, module_name: str) -> None:
         """
@@ -108,7 +110,7 @@ class BotEventHandler(FileSystemEventHandler):
                 return
 
             module_path = Path(event.src_path)
-            if module_path.suffix != '.py':
+            if module_path.suffix != ".py":
                 return
 
             module_name = self.path_to_module_name(module_path)
@@ -120,7 +122,6 @@ class BotEventHandler(FileSystemEventHandler):
         except Exception as e:
             error(f"Failed to reload module {module_name}: {e}")
 
-
     def on_deleted(self, event: FileSystemEvent) -> None:
         """
         Handles deleted Python files by calling the callback with the module name.
@@ -130,7 +131,7 @@ class BotEventHandler(FileSystemEventHandler):
         """
         try:
             module_path = Path(event.src_path)
-            if module_path.suffix != '.py':
+            if module_path.suffix != ".py":
                 return
 
             module_name = self.path_to_module_name(module_path)

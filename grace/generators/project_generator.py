@@ -4,19 +4,20 @@ from logging import info
 
 
 class ProjectGenerator(Generator):
-    NAME = 'project'
-    OPTIONS = {
-        "hidden": True
-    }
+    NAME = "project"
+    OPTIONS = {"hidden": True}
 
     def generate(self, name: str, database: bool = True):
         info(f"Creating '{name}'")
 
-        self.generate_template(self.NAME, variables={
-            "project_name": name,
-            "project_description": "",
-            "database": "yes" if database else "no"
-        })
+        self.generate_template(
+            self.NAME,
+            variables={
+                "project_name": name,
+                "project_description": "",
+                "database": "yes" if database else "no",
+            },
+        )
 
     def validate(self, name: str, **_kwargs) -> bool:
         """Validate the project name.
@@ -35,7 +36,7 @@ class ProjectGenerator(Generator):
         - "awesome_project" is invalid
         - "myAwesomeproject12" is invalid
         """
-        return bool(match('([a-z]|[0-9]|-)+', name))
+        return bool(match("([a-z]|[0-9]|-)+", name))
 
 
 def generator() -> Generator:

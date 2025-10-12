@@ -17,8 +17,8 @@ def seed_database():
     model.save()
 ```
 
-If you have multiple seed file or prefer a structured approach, consider 
-creating a `db/seeds/` directory to organize your seeding scripts. 
+If you have multiple seed file or prefer a structured approach, consider
+creating a `db/seeds/` directory to organize your seeding scripts.
 You can then import and execute these modules within this script as needed.
 """
 

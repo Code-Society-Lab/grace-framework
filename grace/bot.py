@@ -2,10 +2,7 @@ from logging import info, warning, critical
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from discord import Intents, LoginFailure, Object as DiscordObject
 from discord.ext.commands import Bot as DiscordBot, when_mentioned_or
-from discord.ext.commands.errors import (
-    ExtensionNotLoaded,
-    ExtensionAlreadyLoaded
-)
+from discord.ext.commands.errors import ExtensionNotLoaded, ExtensionAlreadyLoaded
 from grace.application import Application, SectionProxy
 from grace.watcher import Watcher
 
@@ -17,7 +14,7 @@ class Bot(DiscordBot):
     """This class is the core of the bot
 
     This class is a subclass of `discord.ext.commands.Bot` and is the core
-    of the bot. It is responsible for loading the extensions and 
+    of the bot. It is responsible for loading the extensions and
     syncing the commands.
 
     The bot is instantiated with the application object and the intents.
@@ -30,23 +27,16 @@ class Bot(DiscordBot):
         self.watcher: Watcher = Watcher(self.on_reload)
 
         command_prefix = kwargs.pop(
-            'command_prefix',
-            when_mentioned_or(self.config.get("prefix", "!"))
+            "command_prefix", when_mentioned_or(self.config.get("prefix", "!"))
         )
-        description: str = kwargs.pop(
-            'description',
-            self.config.get("description")
-        )
-        intents: Intents = kwargs.pop(
-            'intents',
-            Intents.default()
-        )
+        description: str = kwargs.pop("description", self.config.get("description"))
+        intents: Intents = kwargs.pop("intents", Intents.default())
 
         super().__init__(
             command_prefix=command_prefix,
             description=description,
             intents=intents,
-            **kwargs
+            **kwargs,
         )
 
     async def load_extensions(self) -> None:
@@ -63,8 +53,10 @@ class Bot(DiscordBot):
 
     async def invoke(self, ctx):
         if ctx.command:
-            info(f"'{ctx.command}' has been invoked by {ctx.author} "
-                 f"({ctx.author.display_name})")
+            info(
+                f"'{ctx.command}' has been invoked by {ctx.author} "
+                f"({ctx.author.display_name})"
+            )
         await super().invoke(ctx)
 
     async def setup_hook(self) -> None:
@@ -97,14 +89,16 @@ class Bot(DiscordBot):
             await self.unload_extension(module)
             await self.load_extension(module)
 
-    def run(self) -> None: # type: ignore[override]
+    def run(self) -> None:  # type: ignore[override]
         """Override the `run` method to handle the token retrieval"""
         try:
             if self.app.token:
                 super().run(self.app.token)
             else:
-                critical("Unable to find the token. Make sure your current"
-                         "directory contains an '.env' and that "
-                         "'DISCORD_TOKEN' is defined")
+                critical(
+                    "Unable to find the token. Make sure your current"
+                    "directory contains an '.env' and that "
+                    "'DISCORD_TOKEN' is defined"
+                )
         except LoginFailure as e:
             critical(f"Authentication failed : {e}")

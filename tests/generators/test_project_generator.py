@@ -12,19 +12,15 @@ def test_generate_project_with_database(mocker, generator):
     """
     Test if the generate method creates the correct template with a database.
     """
-    mock_generate_template = mocker.patch.object(
-        Generator,
-        'generate_template'
-    )
+    mock_generate_template = mocker.patch.object(Generator, "generate_template")
     name = "example-project"
-    
+
     generator.generate(name, database=True)
 
-    mock_generate_template.assert_called_once_with('project', variables={
-        'project_name': name,
-        'project_description': '',
-        'database': 'yes'
-    })
+    mock_generate_template.assert_called_once_with(
+        "project",
+        variables={"project_name": name, "project_description": "", "database": "yes"},
+    )
 
 
 def test_generate_project_without_database(mocker, generator):
@@ -32,16 +28,15 @@ def test_generate_project_without_database(mocker, generator):
     Test if the generate method creates the correct template without a
     database.
     """
-    mock_generate_template = mocker.patch.object(Generator, 'generate_template')
+    mock_generate_template = mocker.patch.object(Generator, "generate_template")
     name = "example-project"
-    
+
     generator.generate(name, database=False)
 
-    mock_generate_template.assert_called_once_with('project', variables={
-        'project_name': name,
-        'project_description': '',
-        'database': 'no'
-    })
+    mock_generate_template.assert_called_once_with(
+        "project",
+        variables={"project_name": name, "project_description": "", "database": "no"},
+    )
 
 
 def test_validate_valid_name(generator):

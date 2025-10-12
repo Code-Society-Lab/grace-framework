@@ -5,7 +5,7 @@ from grace.database import generate_migration
 
 
 class MigrationGenerator(Generator):
-    NAME: str = 'migration'
+    NAME: str = "migration"
     OPTIONS: dict = {
         "params": [
             Argument(["message"], type=str),

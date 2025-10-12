@@ -7,11 +7,11 @@ from jinja2_strcase.jinja2_strcase import to_snake
 
 
 class ModelGenerator(Generator):
-    NAME: str = 'model'
+    NAME: str = "model"
     OPTIONS: dict = {
         "params": [
             Argument(["name"], type=str),
-            Argument(["params"], type=str, nargs=-1)
+            Argument(["params"], type=str, nargs=-1),
         ],
     }
 
@@ -42,9 +42,9 @@ class ModelGenerator(Generator):
                 "model_name": name,
                 "model_module_name": to_snake(name),
                 "model_columns": model_columns,
-                "model_column_types": types
+                "model_column_types": types,
             },
-            output_dir="bot/models"
+            output_dir="bot/models",
         )
 
         generate_migration(self.app, f"Create {name}")
@@ -61,14 +61,14 @@ class ModelGenerator(Generator):
         - User123
         - ProductItem
         """
-        return bool(match(r'^[A-Z][a-zA-Z0-9]*$', name))
+        return bool(match(r"^[A-Z][a-zA-Z0-9]*$", name))
 
     def extract_columns(self, params: tuple[str]) -> tuple[list, list]:
         columns = []
         types = []
 
         for param in params:
-            name, type = param.split(':')
+            name, type = param.split(":")
 
             if type not in types:
                 types.append(type)
