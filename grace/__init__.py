@@ -1,1 +1,3 @@
-__version__ = "0.10.10-alpha"
+__version__ = "1.0.0-alpha"
+
+from discord.ext.commands import *

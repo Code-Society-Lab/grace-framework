@@ -1,12 +1,13 @@
-import discord
-
-from sys import path
-from os import getpid, getcwd
 from logging import info, warning
-from click import group, argument, option, pass_context, echo
-from grace.generator import register_generators
-from grace.database import up_migration, down_migration
+from os import getcwd, getpid
+from sys import path
 from textwrap import dedent
+
+import discord
+from click import argument, echo, group, option, pass_context
+
+from grace.database import down_migration, up_migration
+from grace.generator import register_generators
 
 APP_INFO = """
 | Discord.py version: {discord_version}
@@ -25,20 +26,24 @@ def cli():
 
 @cli.command()
 @argument("name")
-# This database option is currently disabled since the application and config 
+# This database option is currently disabled since the application and config
 # does not currently support it.
 # @option("--database/--no-database", default=True)
 @pass_context
 def new(ctx, name, database=True):
-    cmd = generate.get_command(ctx, 'project')
+    cmd = generate.get_command(ctx, "project")
     ctx.forward(cmd)
 
-    echo(dedent(f"""
+    echo(
+        dedent(
+            f"""
       Done! Please do :\n
         1. cd {name}
         2. set your token in your .env
         3. grace run
-    """))
+    """
+        )
+    )
 
 
 @group()
@@ -111,11 +116,12 @@ def seed(ctx):
         return warning("Database does not exist")
 
     from db import seed
+
     seed.seed_database()
 
 
 @db.command()
-@argument("revision", default='head')
+@argument("revision", default="head")
 @pass_context
 def up(ctx, revision):
     app = ctx.obj["app"]
@@ -127,7 +133,7 @@ def up(ctx, revision):
 
 
 @db.command()
-@argument("revision", default='head')
+@argument("revision", default="head")
 @pass_context
 def down(ctx, revision):
     app = ctx.obj["app"]
@@ -145,15 +151,17 @@ def _load_database(app):
 
 
 def _show_application_info(app):
-    info(APP_INFO.format(
-        discord_version=discord.__version__,
-        env=app.environment,
-        pid=getpid(),
-        command_sync=app.command_sync,
-        watch=app.watch,
-        database=app.database_infos["database"],
-        dialect=app.database_infos["dialect"],
-    ))
+    info(
+        APP_INFO.format(
+            discord_version=discord.__version__,
+            env=app.environment,
+            pid=getpid(),
+            command_sync=app.command_sync,
+            watch=app.watch,
+            database=app.database_infos["database"],
+            dialect=app.database_infos["dialect"],
+        )
+    )
 
 
 def main():
@@ -161,6 +169,9 @@ def main():
 
     try:
         from bot import app, bot
+
         app_cli(obj={"app": app, "bot": bot})
-    except ImportError:
-        cli()
+    except ModuleNotFoundError as e:
+        if e.name in ["app", "bot"]:
+            cli()
+        raise e

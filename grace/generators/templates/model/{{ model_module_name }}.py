@@ -1,10 +1,6 @@
-from sqlalchemy import Column, {{ ", {}".format(','.join(model_column_types)) }}
-from bot import app
-from grace.model import Model
+from grace.model import Field, Model
 
 
-class {{ model_name | to_camel }}(app.base, Model):
-    __tablename__ = "{{ model_name | to_snake | pluralize }}"
-
-    id = Column(Integer, primary_key=True)
+class {{ model_name | to_camel }}(Model):
+    id: int | None = Field(default=None, primary_key=True)
     {{ model_columns | join('\n    ') }}

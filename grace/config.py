@@ -1,15 +1,11 @@
+from ast import literal_eval
+from configparser import BasicInterpolation, ConfigParser, NoOptionError, SectionProxy
 from os import path
 from re import match
-from ast import literal_eval
+from typing import Any, Mapping, MutableMapping, Optional, Union
+
 from dotenv import load_dotenv
 from sqlalchemy.engine import URL
-from typing import MutableMapping, Mapping, Optional, Union, Any
-from configparser import (
-    ConfigParser,
-    BasicInterpolation,
-    NoOptionError,
-    SectionProxy
-)
 
 ConfigValue = Optional[Union[str, int, float, bool, list]]
 
@@ -32,12 +28,12 @@ class EnvironmentInterpolation(BasicInterpolation):
     """
 
     def before_get(
-            self,
-            parser: MutableMapping[str, Mapping[str, str]],
-            section: str,
-            option: str,
-            value: str,
-            defaults: Mapping[str, str]
+        self,
+        parser: MutableMapping[str, Mapping[str, str]],
+        section: str,
+        option: str,
+        value: str,
+        defaults: Mapping[str, str],
     ) -> str:
         """Interpolate the value before getting it from the parser.
 
@@ -75,6 +71,7 @@ class Config:
     instantiate a second or multiple Config object, they will all share the
     same environment. This is to say, that the config objects are identical.
     """
+
     def __init__(self) -> None:
         load_dotenv(".env")
 
@@ -114,7 +111,7 @@ class Config:
             self.database.get("password"),
             self.database.get("host"),
             self.database.getint("port"),
-            self.database.get("database", self.database_name)
+            self.database.get("database", self.database_name),
         )
 
     @property
@@ -126,10 +123,7 @@ class Config:
         self.__config.read(file)
 
     def get(
-        self,
-        section_key: str,
-        value_key: str,
-        fallback: Any = None
+        self, section_key: str, value_key: str, fallback: Any = None
     ) -> ConfigValue:
         """Get the value from the configuration file.
 
@@ -140,10 +134,7 @@ class Config:
         :param fallback: The value to return if not found (default: None).
         :type fallback: Optional[Union[str, int, float, bool, list]]
         """
-        value: str = self.__config.get(
-            section_key, value_key,
-            fallback=fallback
-        )
+        value: str = self.__config.get(section_key, value_key, fallback=fallback)
 
         if value and match(r"^[\d.]*$|^(?:True|False)*$|\[(.*?)\]", value):
             return literal_eval(value)

@@ -1,13 +1,15 @@
-import sys
 import asyncio
 import importlib.util
-
+import sys
+from logging import WARNING, error, getLogger, info
 from pathlib import Path
-from typing import Callable, Coroutine, Any, Union
-from logging import WARNING, getLogger, info, error
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Union
+
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
+if TYPE_CHECKING:
+    from watchdog.observers.api import BaseObserver
 
 # Suppress verbose watchdog logs
 getLogger("watchdog").setLevel(WARNING)
@@ -24,15 +26,16 @@ class Watcher:
     :param bot: The bot instance, must implement `on_reload()` and `unload_extension()`.
     :type bot: Callable
     """
+
     def __init__(self, callback: ReloadCallback) -> None:
         self.callback: ReloadCallback = callback
-        self.observer: Observer = Observer()
+        self.observer: BaseObserver = Observer()
         self.watch_path: str = "./bot"
 
         self.observer.schedule(
             BotEventHandler(self.callback, self.watch_path),
             self.watch_path,
-            recursive=True
+            recursive=True,
         )
 
     def start(self) -> None:
@@ -49,7 +52,7 @@ class Watcher:
 
 class BotEventHandler(FileSystemEventHandler):
     """
-    Handles file events in the bot directory and calls the provided 
+    Handles file events in the bot directory and calls the provided
     async callback.
 
     :param callback: Async function to call with the module name.
@@ -57,6 +60,7 @@ class BotEventHandler(FileSystemEventHandler):
     :param base_path: Directory path to watch.
     :type base_path: Path or str
     """
+
     def __init__(self, callback: ReloadCallback, base_path: Union[Path, str]):
         self.callback = callback
         self.bot_path = Path(base_path).resolve()
@@ -71,8 +75,8 @@ class BotEventHandler(FileSystemEventHandler):
         :rtype: str
         """
         relative_path = path.resolve().relative_to(self.bot_path)
-        parts = relative_path.with_suffix('').parts
-        return '.'.join(['bot'] + list(parts))
+        parts = relative_path.with_suffix("").parts
+        return ".".join(["bot"] + list(parts))
 
     def reload_module(self, module_name: str) -> None:
         """
@@ -107,8 +111,10 @@ class BotEventHandler(FileSystemEventHandler):
             if event.is_directory:
                 return
 
-            module_path = Path(event.src_path)
-            if module_path.suffix != '.py':
+            src_path: str = str(event.src_path)
+            module_path: Path = Path(src_path)
+
+            if module_path.suffix != ".py":
                 return
 
             module_name = self.path_to_module_name(module_path)
@@ -118,8 +124,7 @@ class BotEventHandler(FileSystemEventHandler):
             self.reload_module(module_name)
             self.run_callback()
         except Exception as e:
-            error(f"Failed to reload module {module_name}: {e}")
-
+            error(f"Failed to reload module: {e}")
 
     def on_deleted(self, event: FileSystemEvent) -> None:
         """
@@ -129,14 +134,16 @@ class BotEventHandler(FileSystemEventHandler):
         :type event: FileSystemEvent
         """
         try:
-            module_path = Path(event.src_path)
-            if module_path.suffix != '.py':
+            src_path: str = str(event.src_path)
+            module_path: Path = Path(src_path)
+
+            if module_path.suffix != ".py":
                 return
 
             module_name = self.path_to_module_name(module_path)
             if not module_name:
                 return
 
-            self.run_coro(self.callback())
+            self.run_callback()
         except Exception as e:
             error(f"Failed to reload module {module_name}: {e}")
