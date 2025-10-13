@@ -6,8 +6,7 @@ def _create_bot(app):
 
     Import is deferred to avoid circular dependency.
     """
-    from bot.{{cookiecutter.__project_slug}} import {{ cookiecutter.\
-        __project_class }}
+    from bot.{{cookiecutter.__project_slug}} import {{ cookiecutter.__project_class }}
     return {{ cookiecutter.__project_class }}(app)
 
 
