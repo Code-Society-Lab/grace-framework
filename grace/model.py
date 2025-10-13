@@ -1,5 +1,4 @@
-from typing import (TYPE_CHECKING, Any, List, Optional, Self, Type, TypeVar,
-                    Union)
+from typing import TYPE_CHECKING, Any, List, Optional, Self, Type, TypeVar, Union
 
 from sqlalchemy import Engine
 from sqlalchemy.sql import ColumnElement

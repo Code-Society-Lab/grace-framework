@@ -3,12 +3,9 @@ from logging import critical, info, warning
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from discord import Intents, LoginFailure
 from discord import Object as DiscordObject
-# make discord.ext.commands importable from this module
 from discord.ext.commands import Bot as DiscordBot
-from discord.ext.commands import *
 from discord.ext.commands import when_mentioned_or
-from discord.ext.commands.errors import (ExtensionAlreadyLoaded,
-                                         ExtensionNotLoaded)
+from discord.ext.commands.errors import ExtensionAlreadyLoaded, ExtensionNotLoaded
 
 from grace.application import Application, SectionProxy
 from grace.watcher import Watcher
@@ -74,13 +71,13 @@ class Bot(DiscordBot):
 
         self.scheduler.start()
 
-    async def load_extension(self, name: str) -> None:
+    async def load_extension(self, name: str) -> None:  # type: ignore[override]
         try:
             await super().load_extension(name)
         except ExtensionAlreadyLoaded:
             warning(f"Extension '{name}' already loaded, skipping.")
 
-    async def unload_extension(self, name: str) -> None:
+    async def unload_extension(self, name: str) -> None:  # type: ignore[override]
         try:
             await super().unload_extension(name)
         except ExtensionNotLoaded:

@@ -95,7 +95,7 @@ class Application:
         }
 
     @property
-    def database_exists(self):
+    def database_exists(self) -> bool:
         return database_exists(self.config.database_uri)
 
     def get_extension_module(self, extension_name) -> Union[str, None]:
@@ -146,8 +146,11 @@ class Application:
             programname=self.config.current_environment,
         )
 
-    def load_database(self):
+    def load_database(self) -> None:
         """Loads and connects to the database using the loaded config"""
+
+        if not self.config.database_uri:
+            raise ValueError("No database uri.")
 
         self.__engine = create_engine(
             self.config.database_uri,
@@ -192,11 +195,17 @@ class Application:
     def create_tables(self):
         """Creates all the tables for the current loaded database"""
 
+        if not self.__engine:
+            raise RuntimeError("Database engine is not initialized.")
+
         self.load_database()
         self.base.metadata.create_all(self.__engine)
 
     def drop_tables(self):
         """Drops all the tables for the current loaded database"""
+
+        if not self.__engine:
+            raise RuntimeError("Database engine is not initialized.")
 
         self.load_database()
         self.base.metadata.drop_all(self.__engine)

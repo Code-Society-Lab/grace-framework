@@ -1,6 +1,5 @@
 from ast import literal_eval
-from configparser import (BasicInterpolation, ConfigParser, NoOptionError,
-                          SectionProxy)
+from configparser import BasicInterpolation, ConfigParser, NoOptionError, SectionProxy
 from os import path
 from re import match
 from typing import Any, Mapping, MutableMapping, Optional, Union

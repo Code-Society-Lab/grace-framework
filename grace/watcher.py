@@ -3,10 +3,13 @@ import importlib.util
 import sys
 from logging import WARNING, error, getLogger, info
 from pathlib import Path
-from typing import Any, Callable, Coroutine, Union
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Union
 
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
+
+if TYPE_CHECKING:
+    from watchdog.observers.api import BaseObserver
 
 # Suppress verbose watchdog logs
 getLogger("watchdog").setLevel(WARNING)
@@ -26,7 +29,7 @@ class Watcher:
 
     def __init__(self, callback: ReloadCallback) -> None:
         self.callback: ReloadCallback = callback
-        self.observer: Observer = Observer()
+        self.observer: BaseObserver = Observer()
         self.watch_path: str = "./bot"
 
         self.observer.schedule(
@@ -108,7 +111,9 @@ class BotEventHandler(FileSystemEventHandler):
             if event.is_directory:
                 return
 
-            module_path = Path(event.src_path)
+            src_path: str = str(event.src_path)
+            module_path: Path = Path(src_path)
+
             if module_path.suffix != ".py":
                 return
 
@@ -119,7 +124,7 @@ class BotEventHandler(FileSystemEventHandler):
             self.reload_module(module_name)
             self.run_callback()
         except Exception as e:
-            error(f"Failed to reload module {module_name}: {e}")
+            error(f"Failed to reload module: {e}")
 
     def on_deleted(self, event: FileSystemEvent) -> None:
         """
@@ -129,7 +134,9 @@ class BotEventHandler(FileSystemEventHandler):
         :type event: FileSystemEvent
         """
         try:
-            module_path = Path(event.src_path)
+            src_path: str = str(event.src_path)
+            module_path: Path = Path(src_path)
+
             if module_path.suffix != ".py":
                 return
 
@@ -137,6 +144,6 @@ class BotEventHandler(FileSystemEventHandler):
             if not module_name:
                 return
 
-            self.run_coro(self.callback())
+            self.run_callback()
         except Exception as e:
             error(f"Failed to reload module {module_name}: {e}")
