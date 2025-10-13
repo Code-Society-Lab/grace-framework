@@ -5,10 +5,10 @@ requires = ["setuptools>=64", "setuptools_scm>=8"]
 name = "grace-framework"
 version = "0.10.10-alpha"
 authors = [
-	{ name="Simon Roy" }
+    { name="Simon Roy" }
 ]
 maintainers = [
-	{ name="Code Society Lab", email="admin@codesociety.xyz" }
+    { name="Code Society Lab", email="admin@codesociety.xyz" }
 ]
 description = "Extensible Discord bot framework based on Discord.py"
 readme = "README.md"
@@ -16,22 +16,22 @@ license = { file="LICENSE" }
 requires-python = ">=3.11"
 
 dependencies = [
-	"discord>2.0",
-	"logger",
-	"coloredlogs",
-	"python-dotenv",
-	"configparser",
-	"click",
-	"sqlalchemy",
-	"sqlalchemy-utils",
+    "discord>2.0",
+    "logger",
+    "coloredlogs",
+    "python-dotenv",
+    "configparser",
+    "click",
+    "sqlalchemy",
+    "sqlalchemy-utils",
     "sqlmodel",
     "pydantic",
     "alembic",
-	"cookiecutter",
-	"jinja2-strcase",
-	"inflect",
-	"watchdog",
-	"apscheduler"
+    "cookiecutter",
+    "jinja2-strcase",
+    "inflect",
+    "watchdog",
+    "apscheduler"
 ]
 
 [project.optional-dependencies]
@@ -42,6 +42,7 @@ dev = [
     "pytest-asyncio",
     "coverage",
     "black",
+    "isort",
 ]
 
 [project.urls]
@@ -78,3 +79,25 @@ exclude = '''
   | grace/generators/templates
 )/
 '''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+line_length = 88
+skip_glob = [
+    ".direnv/**",
+    ".eggs/**",
+    ".git/**",
+    ".hg/**",
+    ".mypy_cache/**",
+    ".venv/**",
+    "venv/**",
+    ".svn/**",
+    "_build/**",
+    "buck-out/**",
+    "build/**",
+    "dist/**",
+    "__pypackages__/**",
+    "grace/generators/templates/**",
+]
