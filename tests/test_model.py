@@ -367,3 +367,25 @@ def test_complex_query_chain(engine, sample_users):
     assert len(users) == 1
     assert users[0].active is True
     assert users[0].age >= 25
+
+
+def test_distinct(engine):
+    users_data = [
+        {"name": "Alice", "email": "alice1@example.com", "age": 25, "active": True},
+        {"name": "Alice", "email": "alice2@example.com", "age": 25, "active": True},
+        {"name": "Bob", "email": "bob@example.com", "age": 30, "active": True},
+    ]
+
+    with Session(engine) as session:
+        for data in users_data:
+            session.add(User(**data))
+        session.commit()
+
+    all_users = User.all()
+    assert len(all_users) == 3
+
+    distinct_names: List[User] = User.query().distinct().order_by(User.name).all()
+    unique_names = sorted({u.name for u in distinct_names})
+
+    assert unique_names == ["Alice", "Bob"]
+    assert len(unique_names) == 2

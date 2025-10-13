@@ -185,6 +185,27 @@ class Query:
         self.statement = self.statement.offset(count)
         return self
 
+    def distinct(self) -> Self:
+        """
+        Returns only distinct/unique records.
+
+        Removes duplicate rows from the result set.
+
+        ## Examples
+        ```python
+        # Get unique user names
+        User.distinct().all()
+
+        # Get distinct active users
+        User.where(User.active == True).distinct().all()
+
+        # Combined with other query methods
+        User.distinct().order_by(User.name).limit(10).all()
+        ```
+        """
+        self.statement = self.statement.distinct()
+        return self
+
     def all(self) -> List[T]:
         """
         Executes the query and returns all matching records as a list.
