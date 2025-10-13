@@ -428,16 +428,33 @@ class Model(SQLModel, metaclass=_ModelMeta):
         user.reload()  # Discards the change
         ```
         """
-        if not self.id:
-            raise ValueError("Cannot reload an unsaved record")
+        mapper = inspect(self.__class__)
+        pk_columns = mapper.primary_key
+
+        if not pk_columns:
+            raise ValueError(
+                f"Cannot reload: {self.__class__.__name__} has no primary key"
+            )
+
+        # Get the primary key value(s)
+        pk_values = []
+        for pk_column in pk_columns:
+            pk_value = getattr(self, pk_column.key, None)
+            if pk_value is None:
+                raise ValueError(
+                    "Cannot reload an unsaved record (primary key is None)"
+                )
+            pk_values.append(pk_value)
+
+        # For composite keys, use tuple; for single key, use scalar
+        pk_identity = tuple(pk_values) if len(pk_values) > 1 else pk_values[0]
 
         with Session(self.get_engine(), expire_on_commit=False) as session:
-            fresh = session.get(self.__class__, self.id)
+            fresh = session.get(self.__class__, pk_identity)
             if not fresh:
-                raise ValueError(f"Record with id {self.id} no longer exists")
+                raise ValueError(f"Record no longer exists in database")
 
             # Copy all attributes from fresh instance
-            mapper = inspect(self.__class__)
             for column in mapper.columns:
                 setattr(self, column.key, getattr(fresh, column.key))
 
