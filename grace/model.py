@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Any, List, Optional, Self, Type, TypeVar, Union
 
 from sqlalchemy import Engine
+from sqlalchemy.orm import selectinload
 from sqlmodel import *
 from sqlmodel.main import SQLModelMetaclass
 
@@ -87,6 +88,39 @@ class Query:
             self.statement = self.statement.where(condition)
         return self
 
+    def with_(self, *relationships: str) -> Self:
+        """
+        Eagerly loads specified relationships for optimization.
+
+        Use this when querying multiple records to avoid N+1 queries.
+        For relationships configured with lazy="selectin", this combines
+        the relationship loading into the main query instead of a separate one.
+
+        ## Examples
+        ```python
+        # Loading a single record: with_() doesn't help much
+        trigger = Trigger.find_by(name="Linus")  # Already loads trigger_words efficiently
+
+        # Loading multiple records: with_() prevents N+1 queries
+        # Without with_: 1 query for triggers + 1 query for all trigger_words = 2 queries
+        triggers = Trigger.all()
+
+        # With with_: 1 combined query = 1 query (more efficient)
+        triggers = Trigger.with_("trigger_words").all()
+
+        # Load multiple relationships at once
+        User.with_("posts", "comments").where(User.active == True).all()
+        ```
+        """
+        for relationship in relationships:
+            relationship_attr = getattr(self.model_class, relationship, None)
+            if relationship_attr is None:
+                raise AttributeError(
+                    f"{self.model_class.__name__} has no relationship '{relationship}'"
+                )
+            self.statement = self.statement.options(selectinload(relationship_attr))
+        return self
+
     def order_by(self, *args, **kwargs) -> Self:
         """
         Orders query results by one or more columns.
@@ -160,7 +194,7 @@ class Query:
         users = User.where(User.active == True).all()
         ```
         """
-        with Session(self.engine) as session:
+        with Session(self.engine, expire_on_commit=False) as session:
             return list(session.exec(self.statement).all())
 
     def first(self) -> Optional[T]:
@@ -174,7 +208,7 @@ class Query:
         user = User.where(User.name == "Alice").first()
         ```
         """
-        with Session(self.engine) as session:
+        with Session(self.engine, expire_on_commit=False) as session:
             return session.exec(self.statement).first()
 
     def one(self) -> Type[T]:
@@ -188,7 +222,7 @@ class Query:
         user = User.where(User.email == "alice@example.com").one()
         ```
         """
-        with Session(self.engine) as session:
+        with Session(self.engine, expire_on_commit=False) as session:
             return session.exec(self.statement).one()
 
     def count(self) -> int:
@@ -343,7 +377,7 @@ class Model(SQLModel, metaclass=_ModelMeta):
         user.save()
         ```
         """
-        with Session(self.get_engine()) as session:
+        with Session(self.get_engine(), expire_on_commit=False) as session:
             session.add(self)
             session.commit()
             session.refresh(self)
@@ -360,7 +394,9 @@ class Model(SQLModel, metaclass=_ModelMeta):
         ```
         """
         with Session(self.get_engine()) as session:
-            session.delete(self)
+            # Merge the instance into the session if it's detached
+            instance = session.merge(self)
+            session.delete(instance)
             session.commit()
 
     def update(self, **kwargs) -> Self:
@@ -378,3 +414,31 @@ class Model(SQLModel, metaclass=_ModelMeta):
             if hasattr(self, key):
                 setattr(self, key, value)
         return self.save()
+
+    def reload(self: T) -> T:
+        """
+        Reloads the instance from the database, discarding any unsaved changes.
+
+        Similar to ActiveRecord's reload method.
+
+        ## Examples
+        ```python
+        user = User.find(1)
+        user.name = "Changed"
+        user.reload()  # Discards the change
+        ```
+        """
+        if not self.id:
+            raise ValueError("Cannot reload an unsaved record")
+
+        with Session(self.get_engine(), expire_on_commit=False) as session:
+            fresh = session.get(self.__class__, self.id)
+            if not fresh:
+                raise ValueError(f"Record with id {self.id} no longer exists")
+
+            # Copy all attributes from fresh instance
+            mapper = inspect(self.__class__)
+            for column in mapper.columns:
+                setattr(self, column.key, getattr(fresh, column.key))
+
+            return self
