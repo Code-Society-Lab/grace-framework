@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, Any, List, Optional, Self, Type, TypeVar, Union
 
 from sqlalchemy import Engine
-from sqlalchemy.sql import ColumnElement
 from sqlmodel import *
 from sqlmodel.main import SQLModelMetaclass
 
@@ -86,22 +85,6 @@ class Query:
 
         for condition in conditions:
             self.statement = self.statement.where(condition)
-        return self
-
-    def unique(self, column_: ColumnElement) -> Self:
-        """
-        Selects distinct values for a given column.
-
-        Useful when you want to retrieve unique records or values.
-
-        ## Examples
-        ```python
-        User.query().unique(User.email).all()
-        ```
-        """
-        self.statement = select(distinct(column_)).select_from(
-            self.statement.subquery()
-        )
         return self
 
     def order_by(self, *args, **kwargs) -> Self:
