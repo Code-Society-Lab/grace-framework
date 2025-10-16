@@ -23,6 +23,10 @@ class MigrationGenerator(Generator):
         ```
         """
         info(f"Generating migration '{message}'")
+
+        if not self.app:
+            raise ValueError("app is not initialized")
+
         generate_migration(self.app, message)
 
     def validate(self, message: str, **_kwargs) -> bool:

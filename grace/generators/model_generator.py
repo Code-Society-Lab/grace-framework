@@ -49,6 +49,9 @@ class ModelGenerator(Generator):
             output_dir="bot/models",
         )
 
+        if not self.app:
+            raise ValueError("app is not initialized")
+
         generate_migration(self.app, f"Create {name}")
 
     def validate(self, name: str, **_kwargs) -> bool:

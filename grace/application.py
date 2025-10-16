@@ -7,11 +7,11 @@ from types import ModuleType
 from typing import Any, Dict, Generator, Optional, Union, no_type_check
 
 from coloredlogs import install
+from sqlalchemy import MetaData
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import DeclarativeMeta, declarative_base
 from sqlalchemy_utils import create_database, database_exists, drop_database
-from sqlmodel import Session, create_engine
+from sqlmodel import Session, SQLModel, create_engine
 
 from grace.config import Config
 from grace.exceptions import ConfigError
@@ -29,7 +29,7 @@ class Application:
 
     __config: Union[Config, None] = None
     __session: Union[Session, None] = None
-    __base: DeclarativeMeta = declarative_base()
+    __metadata: MetaData = SQLModel.metadata
 
     def __init__(self) -> None:
         database_config_path: Path = Path("config/database.cfg")
@@ -45,8 +45,8 @@ class Application:
         self.watch: bool = False
 
     @property
-    def base(self) -> DeclarativeMeta:
-        return self.__base
+    def metadata(self) -> MetaData:
+        return self.__metadata
 
     @property
     def token(self) -> str:
@@ -58,8 +58,6 @@ class Application:
         """Instantiate the session for querying the database."""
 
         if not self.__session:
-            # session_factory: sessionmaker = sessionmaker(bind=self.__engine)
-            # scoped_session_ = scoped_session(session_factory)
             self.__session = Session(self.__engine)
 
         return self.__session
@@ -199,7 +197,7 @@ class Application:
             raise RuntimeError("Database engine is not initialized.")
 
         self.load_database()
-        self.base.metadata.create_all(self.__engine)
+        self.metadata.create_all(self.__engine)
 
     def drop_tables(self):
         """Drops all the tables for the current loaded database"""
@@ -208,4 +206,4 @@ class Application:
             raise RuntimeError("Database engine is not initialized.")
 
         self.load_database()
-        self.base.metadata.drop_all(self.__engine)
+        self.metadata.drop_all(self.__engine)
