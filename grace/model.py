@@ -17,7 +17,18 @@ class Query:
     def __init__(self, model_class: Type[T]):
         self.model_class = model_class
         self.engine: Engine = model_class.get_engine()
-        self.statement: Union[Select, SelectOfScalar] = select(model_class)
+        self._statement: Optional[Union[Select, SelectOfScalar]] = None  # defer
+
+    @property
+    def statement(self):
+        # Lazily create the statement when first accessed
+        if self._statement is None:
+            self._statement = select(self.model_class)
+        return self._statement
+
+    @statement.setter
+    def statement(self, value):
+        self._statement = value
 
     def find(self, value: Any) -> Optional[T]:
         """
@@ -306,6 +317,9 @@ class _ModelMeta(SQLModelMetaclass):
         total = User.count()
         ```
         """
+        if cls.__name__ == "Model":
+            raise AttributeError(f"{name} not found on base Model class")
+
         if name.startswith("_") or name in {"get_engine", "set_engine", "query"}:
             raise AttributeError(name)
 
@@ -319,6 +333,7 @@ class _ModelMeta(SQLModelMetaclass):
 
                 return wrapper
             return attr
+
         raise AttributeError(f"{cls.__name__} has no attribute '{name}'")
 
 
@@ -371,6 +386,8 @@ class Model(SQLModel, metaclass=_ModelMeta):
         User.query().where(User.active == True).order_by(User.created_at).all()
         ```
         """
+        if cls.__name__ == "Model":
+            raise RuntimeError("Cannot query the base Model class")
         return Query(cls)
 
     @classmethod

@@ -29,7 +29,6 @@ class Application:
 
     __config: Union[Config, None] = None
     __session: Union[Session, None] = None
-    __metadata: MetaData = SQLModel.metadata
 
     def __init__(self) -> None:
         database_config_path: Path = Path("config/database.cfg")
@@ -46,7 +45,7 @@ class Application:
 
     @property
     def metadata(self) -> MetaData:
-        return self.__metadata
+        return SQLModel.metadata
 
     @property
     def token(self) -> str:
