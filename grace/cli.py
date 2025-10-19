@@ -92,7 +92,7 @@ def create(ctx):
         return warning("Database already exists")
 
     app.create_database()
-    app.create_tables()
+    # app.create_tables()
 
 
 @db.command()
@@ -147,7 +147,7 @@ def down(ctx, revision):
 def _load_database(app):
     if not app.database_exists:
         app.create_database()
-        app.create_tables()
+        # app.create_tables()
 
 
 def _show_application_info(app):
