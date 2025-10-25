@@ -99,6 +99,40 @@ class Query:
             self.statement = self.statement.where(condition)
         return self
 
+    def not_(self, *conditions, **kwargs) -> Self:
+        """
+        Applies negation of one or more filtering conditions to the query.
+
+        Accepts SQLAlchemy expressions directly, or simple equality conditions
+        expressed as keyword arguments. Keyword arguments are interpreted as
+        equality checks that will then be negated.
+
+        Use this when you want to exclude records matching specific conditions.
+
+        ## Examples
+        ```python
+        # Exclude a specific user by name
+        User.not_(name="Alice").all()
+
+        # Exclude inactive users (negating an expression)
+        User.not_(User.active == False).all()
+
+        # Mixed usage
+        User.not_(User.age > 30, role="admin").all()
+        ```
+        """
+        for key, value in kwargs.items():
+            column_ = getattr(self.model_class, key, None)
+            if column_ is None:
+                raise AttributeError(
+                    f"{self.model_class.__name__} has no column '{key}'"
+                )
+            conditions += (column_ == value,)
+
+        for condition in conditions:
+            self.statement = self.statement.where(not_(condition))
+        return self
+
     def with_(self, *relationships: str) -> Self:
         """
         Eagerly loads specified relationships for optimization.
@@ -204,7 +238,7 @@ class Query:
 
         ## Examples
         ```python
-        # Get unique user names
+        # Get unique users
         User.distinct().all()
 
         # Get distinct active users
