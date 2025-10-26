@@ -50,6 +50,7 @@ class Bot(DiscordBot):
 
         if guild_id := self.config.get("guild_id"):
             guild = DiscordObject(id=guild_id)
+            self.tree.copy_global_to(guild=guild)
             await self.tree.sync(guild=guild)
 
     async def invoke(self, ctx):
@@ -90,11 +91,11 @@ class Bot(DiscordBot):
             await self.unload_extension(module)
             await self.load_extension(module)
 
-    def run(self) -> None:  # type: ignore[override]
+    def run(self, **kwargs) -> None:  # type: ignore[override]
         """Override the `run` method to handle the token retrieval"""
         try:
             if self.app.token:
-                super().run(self.app.token)
+                super().run(self.app.token, **kwargs)
             else:
                 critical(
                     "Unable to find the token. Make sure your current"
