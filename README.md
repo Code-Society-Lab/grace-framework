@@ -69,4 +69,4 @@ Whether it's fixing bugs, suggesting features, or improving the docs - every bit
 If you intend to contribute, please read the [CONTRIBUTING.md](./CONTRIBUTING.md) first. Additionally, **every contributor** is expected to follow the [code of conduct](./CODE_OF_CONDUCT.md).
 
 # License
-Grace Framework is released under [GPL-3.0](https://opensource.org/license/gpl-3-0)
+Grace Framework is released under [MIT](https://github.com/Code-Society-Lab/grace-framework/blob/main/LICENSE)
