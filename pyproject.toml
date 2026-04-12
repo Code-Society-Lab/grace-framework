@@ -13,7 +13,7 @@ maintainers = [
 description = "Extensible Discord bot framework based on Discord.py"
 readme = "README.md"
 license = { file="LICENSE" }
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 
 dependencies = [
     "discord>2.0",
@@ -61,6 +61,7 @@ module = ["jinja2_pluralize.*", "cookiecutter.*"]
 follow_untyped_imports = true
 
 [tool.black]
+target-version = ["py312"]
 exclude = '''
 /(
     \.direnv

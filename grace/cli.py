@@ -34,16 +34,12 @@ def new(ctx, name, database=True):
     cmd = generate.get_command(ctx, "project")
     ctx.forward(cmd)
 
-    echo(
-        dedent(
-            f"""
+    echo(dedent(f"""
       Done! Please do :\n
         1. cd {name}
         2. set your token in your .env
         3. grace run
-    """
-        )
-    )
+    """))
 
 
 @group()
