@@ -14,6 +14,8 @@ def test_generate_project_with_database(mocker, generator):
     Test if the generate method creates the correct template with a database.
     """
     mock_generate_template = mocker.patch.object(Generator, "generate_template")
+    mock_generate_template.return_value = "example_project"
+    mock_db_generator = mocker.patch("grace.generators.project_generator.db_generator")
     name = "example-project"
 
     generator.generate(name, database=True)
@@ -21,6 +23,11 @@ def test_generate_project_with_database(mocker, generator):
     mock_generate_template.assert_called_once_with(
         "project",
         variables={"project_name": name, "project_description": "", "database": "yes"},
+    )
+    # The database must be generated into cookiecutter's actual output
+    # directory (slug, e.g. underscored), not the raw project name.
+    mock_db_generator.return_value.generate.assert_called_once_with(
+        output_dir="example_project"
     )
 
 
@@ -30,6 +37,7 @@ def test_generate_project_without_database(mocker, generator):
     database.
     """
     mock_generate_template = mocker.patch.object(Generator, "generate_template")
+    mock_db_generator = mocker.patch("grace.generators.project_generator.db_generator")
     name = "example-project"
 
     generator.generate(name, database=False)
@@ -38,6 +46,7 @@ def test_generate_project_without_database(mocker, generator):
         "project",
         variables={"project_name": name, "project_description": "", "database": "no"},
     )
+    mock_db_generator.assert_not_called()
 
 
 def test_validate_valid_name(generator):

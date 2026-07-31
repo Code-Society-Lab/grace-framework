@@ -43,6 +43,9 @@ $ grace new my-awesome-bot
 $ cd my-awesome-bot
 ```
 
+By default, a database is scaffolded alongside your bot. Pass `--no-database` to skip
+it, and add one later with `grace generate database`.
+
 #### 3- Set your bot token
 Edit the `.env` in the project directory and set `DISCORD_TOKEN`.
 

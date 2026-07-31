@@ -36,11 +36,15 @@ of the installation should complete itself and start the bot.
 ## Script Usage
 - **Bot Command(s)**:
   - `grace start` : Starts the bot (`ctrl+c` to stop the bot)
+{% if cookiecutter.database == "yes" -%}
 - **Database Command(s)**:
     - `grace db create` : Creates the database and the tables
     - `grace db drop`   : Deletes the tables and the database
     - `grace db seed`   : Seeds the tables (Initialize the default values)
     - `grace db reset`  : Drop, recreate and seeds the database.
-
+{% else -%}
+- **Database**: This project was generated without a database. Run
+  `grace generate database` to add one.
+{% endif %}
 All commands can take the optional `-e` argument with a string to define the environment.<br>
 Available environment: (production, development [default], test)
