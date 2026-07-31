@@ -1,4 +1,4 @@
-from logging import info
+from logging import info, warning
 from re import match
 
 from click.core import Argument
@@ -33,6 +33,16 @@ class ModelGenerator(Generator):
         grace generate model Greeting message:String lang:String
         ```
         """
+        if not self.app:
+            raise ValueError("app is not initialized")
+
+        if not self.app.has_database:
+            warning(
+                "This project has no database configured. "
+                "Run 'grace generate database' to add one."
+            )
+            return
+
         info(f"Generating model '{name}'")
 
         columns, types = self.extract_columns(params)
@@ -48,9 +58,6 @@ class ModelGenerator(Generator):
             },
             output_dir="bot/models",
         )
-
-        if not self.app:
-            raise ValueError("app is not initialized")
 
         generate_migration(self.app, f"Create {name}")
 

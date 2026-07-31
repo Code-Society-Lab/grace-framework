@@ -1,4 +1,4 @@
-from logging import info
+from logging import info, warning
 
 from click.core import Argument
 
@@ -22,10 +22,17 @@ class MigrationGenerator(Generator):
         grace generate migration "Add Greeting model"
         ```
         """
-        info(f"Generating migration '{message}'")
-
         if not self.app:
             raise ValueError("app is not initialized")
+
+        if not self.app.has_database:
+            warning(
+                "This project has no database configured. "
+                "Run 'grace generate database' to add one."
+            )
+            return
+
+        info(f"Generating migration '{message}'")
 
         generate_migration(self.app, message)
 

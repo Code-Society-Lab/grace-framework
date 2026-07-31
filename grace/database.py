@@ -5,9 +5,16 @@ from alembic.config import Config
 from alembic.util.exc import CommandError
 
 from .application import Application
+from .exceptions import ConfigError
 
 
 def generate_migration(app: Application, message: str):
+    if not app.has_database:
+        raise ConfigError(
+            "This project has no database configured. "
+            "Run 'grace generate database' to add one."
+        )
+
     try:
         alembic_cfg = Config("alembic.ini")
         alembic_cfg.config_ini_section = app.environment
