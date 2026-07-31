@@ -140,6 +140,9 @@ venv.bak/
 /site
 docs/site/
 
+# setuptools_scm generated version file
+grace/_version.py
+
 # mypy
 .mypy_cache/
 .dmypy.json
