@@ -4,8 +4,20 @@ from re import match
 from click.core import Argument
 from jinja2_strcase.jinja2_strcase import to_snake
 
+from grace.exceptions import ValidationError
 from grace.generator import Generator
 from grace.generators.migration_generator import generate_migration
+
+# Field annotations must be plain Python types Pydantic can build a schema for,
+# not SQLAlchemy column type classes (e.g. `str`, not `String`) - see
+# https://docs.pydantic.dev/latest/concepts/types/ for what's supported.
+COLUMN_TYPES: dict[str, str] = {
+    "String": "str",
+    "Text": "str",
+    "Integer": "int",
+    "Float": "float",
+    "Boolean": "bool",
+}
 
 
 class ModelGenerator(Generator):
@@ -24,9 +36,7 @@ class ModelGenerator(Generator):
         a SQLAlchemy-style definition. You can specify column names and types
         during generation using the format `column_name:Type`.
 
-        Supported types are any valid SQLAlchemy column types
-        (e.g., `String`, `Integer`, `Boolean`, etc.).
-        See https://docs.sqlalchemy.org/en/20/core/types.html
+        Supported types: String, Text, Integer, Float, Boolean.
 
         Example:
         ```bash
@@ -80,12 +90,20 @@ class ModelGenerator(Generator):
         types = []
 
         for param in params:
-            name, type = param.split(":")
+            name, type_ = param.split(":")
 
-            if type not in types:
-                types.append(type)
+            if type_ not in COLUMN_TYPES:
+                raise ValidationError(
+                    f"Unsupported column type '{type_}' for '{name}'. "
+                    f"Supported types: {', '.join(sorted(COLUMN_TYPES))}."
+                )
 
-            columns.append((name, type))
+            python_type = COLUMN_TYPES[type_]
+
+            if python_type not in types:
+                types.append(python_type)
+
+            columns.append((name, python_type))
 
         return columns, types
 
