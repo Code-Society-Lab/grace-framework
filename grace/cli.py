@@ -33,9 +33,11 @@ def new(ctx, name, database=True):
     cmd = generate.get_command(ctx, "project")
     ctx.forward(cmd)
 
+    project_slug = name.lower().replace("-", "_")
+
     echo(dedent(f"""
       Done! Please do :\n
-        1. cd {name}
+        1. cd {project_slug}
         2. set your token in your .env
         3. grace run
     """))
