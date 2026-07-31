@@ -1,0 +1,110 @@
+site_name: Grace Framework
+site_description: An opinionated, extensible Discord bot framework built on top of discord.py.
+repo_url: https://github.com/Code-Society-Lab/grace-framework
+repo_name: Code-Society-Lab/grace-framework
+theme:
+  name: material
+  palette:
+    - media: (prefers-color-scheme)
+      toggle:
+        icon: material/lightbulb-auto
+        name: Switch to light mode
+    - media: '(prefers-color-scheme: light)'
+      scheme: default
+      primary: black
+      accent: amber
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
+    - media: '(prefers-color-scheme: dark)'
+      scheme: slate
+      primary: black
+      accent: amber
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to system preference
+  features:
+    - content.code.annotate
+    - content.code.copy
+    - content.footnote.tooltips
+    - content.tabs.link
+    - content.tooltips
+    - navigation.footer
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.path
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github-alt
+  language: en
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: sphinx
+            show_root_heading: true
+            show_if_no_docstring: true
+            inherited_members: false
+            members_order: source
+            separate_signature: true
+            unwrap_annotated: true
+            filters:
+            - '!^_'
+            merge_init_into_class: true
+            docstring_section_style: spacy
+            signature_crossrefs: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+markdown_extensions:
+  - admonition
+  - codehilite
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.snippets:
+      base_path: [".."]
+nav:
+  - Home: index.md
+  - Guides:
+      - Overview: guides/index.md
+      - Installation: guides/installation.md
+      - Creating a Bot: guides/creating-a-bot.md
+      - Configuration: guides/configuration.md
+      - Models & Migrations: guides/models.md
+      - Extensions: guides/extensions.md
+      - Database Management: guides/database.md
+      - Writing Generators: guides/generators.md
+  - Reference:
+      - Application: reference/application.md
+      - Bot: reference/bot.md
+      - CLI: reference/cli.md
+      - Config: reference/config.md
+      - Database: reference/database.md
+      - Exceptions: reference/exceptions.md
+      - Generator: reference/generator.md
+      - Importer: reference/importer.md
+      - Model: reference/model.md
+      - Watcher: reference/watcher.md
+  - Examples:
+      - Overview: examples/index.md
+      - Task Bot: examples/task-bot.md
+      - Custom Generator: examples/custom-generator.md
+      - Scheduled Tasks: examples/scheduler.md
+      - Hot Reload: examples/hot-reload.md

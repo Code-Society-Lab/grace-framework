@@ -44,6 +44,11 @@ dev = [
     "black",
     "isort",
 ]
+doc = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+]
 
 [project.urls]
 "Homepage" = "https://codesociety.xyz"
