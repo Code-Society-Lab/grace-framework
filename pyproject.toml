@@ -87,6 +87,7 @@ exclude = '''
   | __pypackages__
   | grace/generators/templates
 )/
+| grace/_version\.py
 '''
 
 [tool.isort]
