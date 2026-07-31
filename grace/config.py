@@ -85,8 +85,12 @@ class Config:
         self.read("config/environment.cfg")
 
     @property
-    def database(self) -> SectionProxy:
-        return self.__config[f"database.{self.__environment}"]
+    def database(self) -> Union[SectionProxy, None]:
+        section = f"database.{self.__environment}"
+
+        if not self.__config.has_section(section):
+            return None
+        return self.__config[section]
 
     @property
     def client(self) -> SectionProxy:
@@ -102,6 +106,9 @@ class Config:
 
     @property
     def database_uri(self) -> Union[str, URL, None]:
+        if not self.database:
+            return None
+
         if self.database.get("url"):
             return self.database.get("url")
 

@@ -15,6 +15,18 @@ def test_set_environment(config):
     assert config.current_environment == "test"
 
 
+def test_database_without_database_section__expect_none(config):
+    config.set_environment("test")
+
+    assert config.database is None
+
+
+def test_database_uri_without_database_section__expect_none(config):
+    config.set_environment("test")
+
+    assert config.database_uri is None
+
+
 # def test_section_name(config):
 #     """Test if the section name is set correctly"""
 #     config.set_environment("test")

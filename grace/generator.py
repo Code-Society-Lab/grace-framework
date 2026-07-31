@@ -120,17 +120,29 @@ class Generator(Command):
         """Validates the arguments passed to the command."""
         return True
 
-    def generate_template(self, template_dir: str, variables: dict[str, Any] = {}):
-        """Generates a template using Cookiecutter.
+    def generate_template(
+        self, template_dir: str, variables: dict[str, Any] = {}, output_dir: str = ""
+    ):
+        """Generate a template using Cookiecutter.
 
-        :param template_dir: The name of the template to generate.
-        :type template_dir: str
+        Renders `template_dir` (a subdirectory of `templates_path`) with the given
+        variables, writing the result into `output_dir` (defaults to the current
+        working directory). Returns the path to the generated project directory.
 
-        :param variables: The variables to pass to the template. (default: {})
-        :type variables: dict[str, Any]
+        ## Example
+
+        ```python
+        self.generate_template(
+            "project",
+            variables={"project_name": "my-bot"},
+            output_dir="my-bot",
+        )
+        ```
         """
         template = str(self.templates_path / template_dir)
-        cookiecutter(template, extra_context=variables, no_input=True)
+        return cookiecutter(
+            template, extra_context=variables, no_input=True, output_dir=output_dir
+        )
 
     def generate_file(
         self, template_dir: str, variables: dict[str, Any] = {}, output_dir: str = ""
