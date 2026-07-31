@@ -2,7 +2,6 @@ from configparser import SectionProxy
 from logging import basicConfig, critical
 from logging.handlers import RotatingFileHandler
 from os import environ
-from pathlib import Path
 from types import ModuleType
 from typing import Any, Dict, Generator, Optional, Union, no_type_check
 
@@ -31,11 +30,6 @@ class Application:
     __session: Union[Session, None] = None
 
     def __init__(self) -> None:
-        database_config_path: Path = Path("config/database.cfg")
-
-        if not database_config_path.exists():
-            raise ConfigError("Unable to find the 'database.cfg' file.")
-
         self.__token: str = str(self.config.get("discord", "token"))
         self.__engine: Union[Engine, None] = None
 
@@ -85,7 +79,14 @@ class Application:
             yield module
 
     @property
+    def has_database(self) -> bool:
+        return bool(self.config.database_uri)
+
+    @property
     def database_infos(self) -> Dict[str, str]:
+        if not self.has_database:
+            return {}
+
         return {
             "dialect": self.session.bind.dialect.name,
             "database": self.session.bind.url.database,
@@ -93,6 +94,9 @@ class Application:
 
     @property
     def database_exists(self) -> bool:
+        if not self.has_database:
+            return False
+
         return database_exists(self.config.database_uri)
 
     def get_extension_module(self, extension_name) -> Union[str, None]:
@@ -146,8 +150,8 @@ class Application:
     def load_database(self) -> None:
         """Loads and connects to the database using the loaded config"""
 
-        if not self.config.database_uri:
-            raise ValueError("No database uri.")
+        if not self.has_database:
+            return
 
         self.__engine = create_engine(
             self.config.database_uri,
@@ -180,17 +184,21 @@ class Application:
     def create_database(self):
         """Creates the database for the current loaded config"""
 
+        self._require_database()
         self.load_database()
         create_database(self.config.database_uri)
 
     def drop_database(self):
         """Drops the database for the current loaded config"""
 
+        self._require_database()
         self.load_database()
         drop_database(self.config.database_uri)
 
     def create_tables(self):
         """Creates all the tables for the current loaded database"""
+
+        self._require_database()
 
         if not self.__engine:
             raise RuntimeError("Database engine is not initialized.")
@@ -201,8 +209,17 @@ class Application:
     def drop_tables(self):
         """Drops all the tables for the current loaded database"""
 
+        self._require_database()
+
         if not self.__engine:
             raise RuntimeError("Database engine is not initialized.")
 
         self.load_database()
         self.metadata.drop_all(self.__engine)
+
+    def _require_database(self) -> None:
+        if not self.has_database:
+            raise ConfigError(
+                "This project has no database configured. "
+                "Run 'grace generate database' to add one."
+            )
