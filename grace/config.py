@@ -63,9 +63,9 @@ class Config:
     """This class is the application configurations.
     It loads all the configuration for the given environment
 
-    The config environment is chosen by checking the value of the `BOT_ENV`
+    The config environment is chosen by checking the value of the `GRACE_ENV`
     environment variable. If the variable is not set it will load
-    with production by default.
+    with `development` by default (see `Application.load`).
 
     There can be only one config loaded at once. Which means thar if you
     instantiate a second or multiple Config object, they will all share the

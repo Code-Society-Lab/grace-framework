@@ -23,8 +23,8 @@ class Watcher:
     Wrapper around the watchdog observer that watches a specified
     directory (./bot) for Python file changes and manages event handling.
 
-    :param bot: The bot instance, must implement `on_reload()` and `unload_extension()`.
-    :type bot: Callable
+    :param callback: Async, no-argument callback invoked after a reload is handled.
+    :type callback: ReloadCallback
     """
 
     def __init__(self, callback: ReloadCallback) -> None:
