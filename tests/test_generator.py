@@ -33,7 +33,7 @@ def test_generate_template(generator):
         template_path = str(generator.templates_path / "project")
 
         cookiecutter.assert_called_once_with(
-            template_path, extra_context={}, no_input=True
+            template_path, extra_context={}, no_input=True, output_dir=""
         )
 
 
