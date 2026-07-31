@@ -41,7 +41,7 @@ Grace Framework is an opinionated, extensible Discord bot framework built on top
 
 - **Quick to start** — generate a full-featured bot in seconds
 - **Modular architecture** — clean separation of features via extensions (cogs)
-- **Database integration** — connect your bot to a persistent backend with SQLModel and Alembic migrations
+- **Database integration** — opt-in, per-project persistence backed by SQLModel and Alembic migrations
 - **Built-in generators** — scaffold extensions, models, and migrations with a single command
 
 ## Quickstart

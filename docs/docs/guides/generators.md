@@ -71,6 +71,29 @@ def generator() -> Generator:
     return CogGenerator()
 ```
 
+## Composing Generators
+
+A generator can call another generator directly. `grace new` does exactly this: [`ProjectGenerator`](../reference/generator.md) scaffolds the project template, then — unless `--no-database` was passed — invokes [`DatabaseGenerator`](../reference/generator.md) itself to add `config/database.cfg`, `alembic.ini`, and `db/`:
+
+```python
+from grace.generators.database_generator import generator as db_generator
+
+
+class ProjectGenerator(Generator):
+    NAME = "project"
+
+    def generate(self, name: str, database: bool = True):
+        project_dir = self.generate_template(
+            self.NAME,
+            variables={"project_name": name, "database": "yes" if database else "no"},
+        )
+
+        if database:
+            db_generator().generate(output_dir=project_dir)
+```
+
+`generate_template` returns the path it just generated into, which is how `DatabaseGenerator` knows where to write its own files. This is also how [`grace generate database`](../guides/database.md#adding-a-database-later) retrofits a database onto an existing `--no-database` project — it's the same `DatabaseGenerator`, just invoked directly from the CLI with the current directory as `output_dir`.
+
 ## Rendering Output
 
 `Generator` gives you two ways to produce files, both rooted at `grace/generators/templates/`:

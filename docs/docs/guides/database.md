@@ -2,6 +2,18 @@
 
 Grace exposes a `grace db` command group for managing your bot's database, plus automatic database creation on startup.
 
+A database is optional. `grace new` scaffolds one by default (`config/database.cfg`, `alembic.ini`, `db/`) — pass `--no-database` to skip it (see [Creating a Bot](creating-a-bot.md#generate-your-bot)). [`Application.has_database`](../reference/application.md) reports whether the current project has one configured; every command below (besides `create`) checks it first and warns instead of failing if it doesn't.
+
+## Adding a Database Later
+
+If your project was created with `--no-database`, add one at any time from inside the project directory:
+
+```bash
+grace generate database
+```
+
+This writes `alembic.ini`, `config/database.cfg`, and a `db/` directory (Alembic environment + `seed.py`) into the current project — the same files `grace new` would have generated. Afterwards, `grace generate model`, `grace generate migration`, and every `grace db` command work normally.
+
 ## Create
 
 ```bash

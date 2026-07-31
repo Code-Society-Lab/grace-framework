@@ -1,12 +1,14 @@
 # Configuration
 
-Every generated bot ships with three configuration files under `config/`, all read by [`Config`](../reference/config.md) and combined by [`Application`](../reference/application.md):
+Every generated bot ships with configuration files under `config/`, all read by [`Config`](../reference/config.md) and combined by [`Application`](../reference/application.md):
 
 | File | Purpose |
 |---|---|
 | `config/settings.cfg` | Client identity (name, prefix, description, guild) and the Discord token |
-| `config/database.cfg` | Per-environment database connection settings |
+| `config/database.cfg` | Per-environment database connection settings — only present if your project has a database |
 | `config/environment.cfg` | Per-environment logging and SQLAlchemy echo settings |
+
+`config/database.cfg` is optional: it's included by default when you run `grace new`, skipped with `--no-database`, and can be added later with `grace generate database` (see [Database Management](database.md#adding-a-database-later)). Without it, `Config.database`/`database_uri` return `None` and `Application.has_database` is `False`.
 
 Grace uses three environments — `production`, `development`, and `test` — selected via the `GRACE_ENV` environment variable. If unset, `development` is used by default (see `Application.load`).
 
@@ -46,11 +48,11 @@ url = ${DATABASE_URL}
 
 [database.development]
 adapter = sqlite
-database = task_bot_development.db
+database = development.db
 
 [database.test]
 adapter = sqlite
-database = task_bot_test.db
+database = test.db
 ```
 
 Each section is named `database.<environment>`. You need at minimum an `adapter` (the SQL dialect, optionally `dialect+driver`, e.g. `postgresql+psycopg2`) and a `database` name — or a full `url` (as used for `production` above, letting you supply a complete SQLAlchemy connection string via an environment variable). Optional keys: `user`, `password`, `host`, `port`.

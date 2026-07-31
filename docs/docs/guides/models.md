@@ -4,10 +4,10 @@ Models are how your bot talks to its database. Grace models are [`SQLModel`](htt
 
 ## Generating a Model
 
-Generate your first model:
+Generate your first model, in `column_name:Type` pairs:
 
 ```bash
-grace generate model Task name:str description:str done:bool
+grace generate model Task name:String description:String done:Boolean
 ```
 
 This command automatically:
@@ -27,7 +27,10 @@ Generating /db/alembic/versions/99e6d0cf0aec_create_task.py ...  done
 ```
 
 !!! note
-    Column definitions are currently limited to basic Python/SQLAlchemy types (`str`, `int`, `float`, `bool`, `String`, `Integer`, `Boolean`, etc.).
+    Column types are SQLAlchemy-style names, not Python types: `String`, `Text`, `Integer`, `Float`, `Boolean`. Each is mapped to its corresponding Python annotation (`str`, `str`, `int`, `float`, `bool`) in the generated model. Any other type name raises a `ValidationError`.
+
+!!! note
+    `grace generate model` requires a database — if your project was created with `--no-database`, it warns and does nothing until you run `grace generate database` (see [Database Management](database.md#adding-a-database-later)).
 
 The generated `bot/models/task.py`:
 

@@ -18,7 +18,7 @@ DISCORD_TOKEN=your token here
 ## 2. Generate the Model
 
 ```bash
-grace generate model Task name:str description:str done:bool
+grace generate model Task name:String description:String done:Boolean
 grace db up
 ```
 

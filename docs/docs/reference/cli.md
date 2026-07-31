@@ -24,6 +24,10 @@ grace --environment test db up
 
 Scaffolds a new bot project named `NAME` in a directory of the same name, via [`grace generate project`](../guides/generators.md). Available outside of a project.
 
+| Option | Default | Description |
+|---|---|---|
+| `--database / --no-database` | `--database` | Scaffold a database (`config/database.cfg`, `alembic.ini`, `db/`) alongside the project. Skip it and add one later with `grace generate database`. |
+
 ### `grace run`
 
 Runs the bot. Automatically creates the database if it doesn't exist.
@@ -39,7 +43,7 @@ grace run --watch
 
 ### `grace db`
 
-Database management commands — see [Database Management](../guides/database.md) for details on each.
+Database management commands — see [Database Management](../guides/database.md) for details on each. All of them (except `create`) require a database — if your project has none, they warn and exit rather than raising.
 
 | Command | Arguments | Description |
 |---|---|---|
@@ -56,8 +60,9 @@ Scaffolding commands — see [Writing Generators](../guides/generators.md) for h
 | Command | Arguments | Description |
 |---|---|---|
 | `grace generate cog NAME [DESCRIPTION]` | `NAME` (PascalCase), `DESCRIPTION` (optional) | Generates `bot/extensions/<name>_cog.py`. |
-| `grace generate model NAME [COLUMN:TYPE ...]` | `NAME` (PascalCase), variadic `COLUMN:TYPE` pairs | Generates `bot/models/<name>.py` and an initial migration. |
-| `grace generate migration MESSAGE` | `MESSAGE` | Autogenerates an Alembic revision from the current model state. |
+| `grace generate model NAME [COLUMN:TYPE ...]` | `NAME` (PascalCase), variadic `COLUMN:TYPE` pairs (types: `String`, `Text`, `Integer`, `Float`, `Boolean`) | Generates `bot/models/<name>.py` and an initial migration. Requires a database. |
+| `grace generate migration MESSAGE` | `MESSAGE` | Autogenerates an Alembic revision from the current model state. Requires a database. |
+| `grace generate database` | — | Adds `config/database.cfg`, `alembic.ini`, and `db/` to the current project (for projects created with `--no-database`). |
 | `grace generate project NAME` | `NAME` (lowercase/hyphens) | Scaffolds a new project directory (used internally by `grace new`). |
 
-`grace generate` is a dynamic command group — any module under `grace.generators` (or a package you register the same way) exposing a `generator()` function shows up here automatically.
+`grace generate` is a dynamic command group — any module under `grace.generators` exposing a `generator()` function shows up here automatically.
