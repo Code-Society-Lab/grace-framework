@@ -15,8 +15,9 @@ APP_INFO = """
 | Environment: {env}
 | Syncing command: {command_sync}
 | Watcher enabled: {watch}
-| Using database: {database} with {dialect}
 """.rstrip()
+
+DB_INFO = "| Using database: {database} with {dialect}"
 
 
 @group()
@@ -26,9 +27,7 @@ def cli():
 
 @cli.command()
 @argument("name")
-# This database option is currently disabled since the application and config
-# does not currently support it.
-# @option("--database/--no-database", default=True)
+@option("--database/--no-database", default=True)
 @pass_context
 def new(ctx, name, database=True):
     cmd = generate.get_command(ctx, "project")
@@ -84,6 +83,9 @@ def run(ctx, sync, watch):
 def create(ctx):
     app = ctx.obj["app"]
 
+    if not _require_database(app):
+        return
+
     if app.database_exists:
         return warning("Database already exists")
 
@@ -96,6 +98,9 @@ def create(ctx):
 def drop(ctx):
     app = ctx.obj["app"]
 
+    if not _require_database(app):
+        return
+
     if not app.database_exists:
         return warning("Database does not exist")
 
@@ -107,6 +112,9 @@ def drop(ctx):
 @pass_context
 def seed(ctx):
     app = ctx.obj["app"]
+
+    if not _require_database(app):
+        return
 
     if not app.database_exists:
         return warning("Database does not exist")
@@ -122,6 +130,9 @@ def seed(ctx):
 def up(ctx, revision):
     app = ctx.obj["app"]
 
+    if not _require_database(app):
+        return
+
     if not app.database_exists:
         return warning("Database does not exist")
 
@@ -134,6 +145,9 @@ def up(ctx, revision):
 def down(ctx, revision):
     app = ctx.obj["app"]
 
+    if not _require_database(app):
+        return
+
     if not app.database_exists:
         return warning("Database does not exist")
 
@@ -141,21 +155,39 @@ def down(ctx, revision):
 
 
 def _load_database(app):
+    if not app.has_database:
+        return
+
     if not app.database_exists:
         app.create_database()
         # app.create_tables()
 
 
+def _require_database(app) -> bool:
+    if not app.has_database:
+        warning(
+            "This project has no database configured. "
+            "Run 'grace generate database' to add one."
+        )
+        return False
+    return True
+
+
 def _show_application_info(app):
+    message = APP_INFO
+
+    if app.has_database:
+        message = f"{message}\n{DB_INFO}"
+
     info(
-        APP_INFO.format(
+        message.format(
             discord_version=discord.__version__,
             env=app.environment,
             pid=getpid(),
             command_sync=app.command_sync,
             watch=app.watch,
-            database=app.database_infos["database"],
-            dialect=app.database_infos["dialect"],
+            database=app.database_infos.get("database"),
+            dialect=app.database_infos.get("dialect"),
         )
     )
 
