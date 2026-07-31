@@ -3,7 +3,7 @@ requires = ["setuptools>=64", "setuptools_scm>=8"]
 
 [project]
 name = "grace-framework"
-version = "1.0.5-alpha"
+dynamic = ["version"]
 authors = [
     { name="Simon Roy" }
 ]
@@ -61,6 +61,9 @@ grace = "grace.cli:main"
 packages = ["grace"]
 license-files = []
 
+[tool.setuptools_scm]
+write_to = "grace/_version.py"
+
 [[tool.mypy.overrides]]
 module = ["jinja2_pluralize.*", "cookiecutter.*"]
 follow_untyped_imports = true
@@ -84,6 +87,7 @@ exclude = '''
   | __pypackages__
   | grace/generators/templates
 )/
+| grace/_version\.py
 '''
 
 [tool.isort]
